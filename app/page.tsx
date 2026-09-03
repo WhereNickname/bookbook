@@ -14,7 +14,7 @@ type ReadingLine = {
 
 type GestureStart = { x: number; y: number; moved: boolean };
 
-function splitIntoBeats(text: string, maximumGlyphs = 26) {
+function splitIntoBeats(text: string, maximumGlyphs = 24) {
   const words = text.trim().split(/\s+/);
   const beats: string[] = [];
   let remaining = words;
