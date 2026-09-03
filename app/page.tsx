@@ -293,6 +293,11 @@ export default function Home() {
             <div className="sentence-rail" ref={railRef} aria-live="polite">
               {lines.map((line, index) => {
                 const isActive = index === activeIndex;
+                const positionClass = index < activeIndex
+                  ? 'reading-line--past'
+                  : index > activeIndex
+                    ? 'reading-line--future'
+                    : 'reading-line--current';
                 const counter = line.section === 'teaser' ? `${line.number}/3` : `${line.number}/${bookBeatCount}`;
                 const glyphCount = line.text.replace(/\s/g, '').length;
                 const fitClass = glyphCount > 42
@@ -304,7 +309,7 @@ export default function Home() {
                   <div
                     key={line.id}
                     ref={(node) => { lineRefs.current[index] = node; }}
-                    className={`reading-line ${fitClass} ${isActive ? 'reading-line--active' : ''}`}
+                    className={`reading-line ${fitClass} ${positionClass} ${isActive ? 'reading-line--active' : ''}`}
                     aria-current={isActive ? 'step' : undefined}
                     onClick={() => {
                       if (Date.now() < suppressTapUntil.current) return;
