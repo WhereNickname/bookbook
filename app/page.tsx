@@ -347,10 +347,7 @@ export default function Home() {
                     }}
                   >
                     {isActive && <span className="counter">{counter}</span>}
-                    <p>
-                      <span className="reading-text__main">{line.text}</span>
-                      <span className="reading-text__compact" aria-hidden="true">{line.text}</span>
-                    </p>
+                    <p>{line.text}</p>
                   </div>
                 );
               })}
