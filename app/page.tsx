@@ -63,7 +63,6 @@ export default function Home() {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [mode, setMode] = useState<'plain' | 'bubble'>('plain');
-  const [textExitDirection, setTextExitDirection] = useState<'next' | 'previous' | null>(null);
   const [saved, setSaved] = useState(false);
   const [phoneScale, setPhoneScale] = useState(1);
   const phoneRef = useRef<HTMLElement>(null);
@@ -74,7 +73,6 @@ export default function Home() {
   const wheelTriggered = useRef(false);
   const wheelResetTimer = useRef<number | null>(null);
   const scrollAnimation = useRef<number | null>(null);
-  const textTransitionTimer = useRef<number | null>(null);
   const activeIndexRef = useRef(0);
   const previousMode = useRef(mode);
   const hasPositionedRail = useRef(false);
@@ -99,38 +97,17 @@ export default function Home() {
   }, []);
 
   const selectMode = useCallback((nextMode: 'plain' | 'bubble') => {
-    if (textTransitionTimer.current !== null) {
-      window.clearTimeout(textTransitionTimer.current);
-      textTransitionTimer.current = null;
-    }
-    setTextExitDirection(null);
     setMode(nextMode);
   }, []);
 
   const move = useCallback((amount: number) => {
-    if (textTransitionTimer.current !== null) return;
     const current = activeIndexRef.current;
     const target = Math.max(0, Math.min(lines.length - 1, current + amount));
     if (target === current) return;
 
-    if (mode === 'plain') {
-      setTextExitDirection(amount > 0 ? 'next' : 'previous');
-      textTransitionTimer.current = window.setTimeout(() => {
-        activeIndexRef.current = target;
-        setActiveIndex(target);
-        setTextExitDirection(null);
-        textTransitionTimer.current = null;
-      }, 250);
-      return;
-    }
-
     activeIndexRef.current = target;
     setActiveIndex(target);
-  }, [lines.length, mode]);
-
-  useEffect(() => () => {
-    if (textTransitionTimer.current !== null) window.clearTimeout(textTransitionTimer.current);
-  }, []);
+  }, [lines.length]);
 
   useEffect(() => {
     const modeChanged = previousMode.current !== mode;
@@ -145,26 +122,23 @@ export default function Home() {
       const rail = railRef.current;
       const target = lineRefs.current[activeIndex];
       if (!rail || !target) return;
-      const targetTop = target.offsetTop - rail.clientHeight / 2 + target.clientHeight / 2 - 34;
+      const readTargetTop = () => target.offsetTop - rail.clientHeight / 2 + target.clientHeight / 2 - 34;
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       if (!hasPositionedRail.current || modeChanged || reducedMotion) {
-        rail.scrollTop = targetTop;
+        rail.scrollTop = readTargetTop();
         hasPositionedRail.current = true;
         return;
       }
 
       const startTop = rail.scrollTop;
-      const distance = targetTop - startTop;
-      const duration = mode === 'bubble' ? 440 : 280;
+      const duration = mode === 'bubble' ? 440 : 380;
       const startedAt = window.performance.now();
 
       const animate = (now: number) => {
         const progress = Math.min(1, (now - startedAt) / duration);
-        const eased = progress < 0.5
-          ? 4 * progress * progress * progress
-          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-        rail.scrollTop = startTop + distance * eased;
+        const eased = 1 - Math.pow(1 - progress, 4);
+        rail.scrollTop = startTop + (readTargetTop() - startTop) * eased;
 
         if (progress < 1) scrollAnimation.current = window.requestAnimationFrame(animate);
         else scrollAnimation.current = null;
@@ -254,7 +228,7 @@ export default function Home() {
       <div className="phone-viewport" style={{ width: 390 * phoneScale, height: 844 * phoneScale }}>
         <section
           ref={phoneRef}
-          className={`phone phone--${mode} ${textExitDirection ? `phone--text-exit-${textExitDirection}` : ''}`}
+          className={`phone phone--${mode}`}
           style={{ transform: `scale(${phoneScale})` }}
           aria-label={`북북 ${mode === 'plain' ? '일반' : '말풍선'} 읽기 화면`}
           tabIndex={0}
