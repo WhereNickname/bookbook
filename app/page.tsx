@@ -63,6 +63,7 @@ export default function Home() {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [mode, setMode] = useState<'plain' | 'bubble'>('plain');
+  const [textExitDirection, setTextExitDirection] = useState<'next' | 'previous' | null>(null);
   const [saved, setSaved] = useState(false);
   const [phoneScale, setPhoneScale] = useState(1);
   const phoneRef = useRef<HTMLElement>(null);
@@ -73,6 +74,8 @@ export default function Home() {
   const wheelTriggered = useRef(false);
   const wheelResetTimer = useRef<number | null>(null);
   const scrollAnimation = useRef<number | null>(null);
+  const textTransitionTimer = useRef<number | null>(null);
+  const activeIndexRef = useRef(0);
   const previousMode = useRef(mode);
   const hasPositionedRail = useRef(false);
   const gesture = useRef<GestureStart | null>(null);
@@ -95,12 +98,39 @@ export default function Home() {
     return () => window.removeEventListener('resize', fitPhone);
   }, []);
 
-  const move = useCallback(
-    (amount: number) => {
-      setActiveIndex((current) => Math.max(0, Math.min(lines.length - 1, current + amount)));
-    },
-    [lines.length],
-  );
+  const selectMode = useCallback((nextMode: 'plain' | 'bubble') => {
+    if (textTransitionTimer.current !== null) {
+      window.clearTimeout(textTransitionTimer.current);
+      textTransitionTimer.current = null;
+    }
+    setTextExitDirection(null);
+    setMode(nextMode);
+  }, []);
+
+  const move = useCallback((amount: number) => {
+    if (textTransitionTimer.current !== null) return;
+    const current = activeIndexRef.current;
+    const target = Math.max(0, Math.min(lines.length - 1, current + amount));
+    if (target === current) return;
+
+    if (mode === 'plain') {
+      setTextExitDirection(amount > 0 ? 'next' : 'previous');
+      textTransitionTimer.current = window.setTimeout(() => {
+        activeIndexRef.current = target;
+        setActiveIndex(target);
+        setTextExitDirection(null);
+        textTransitionTimer.current = null;
+      }, 430);
+      return;
+    }
+
+    activeIndexRef.current = target;
+    setActiveIndex(target);
+  }, [lines.length, mode]);
+
+  useEffect(() => () => {
+    if (textTransitionTimer.current !== null) window.clearTimeout(textTransitionTimer.current);
+  }, []);
 
   useEffect(() => {
     const modeChanged = previousMode.current !== mode;
@@ -196,12 +226,12 @@ export default function Home() {
         event.preventDefault();
         move(-1);
       }
-      if (event.key === 'ArrowLeft') setMode('plain');
-      if (event.key === 'ArrowRight') setMode('bubble');
+      if (event.key === 'ArrowLeft') selectMode('plain');
+      if (event.key === 'ArrowRight') selectMode('bubble');
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [move]);
+  }, [move, selectMode]);
 
   const finishGesture = (start: GestureStart, x: number, y: number) => {
     const dx = start.x - x;
@@ -210,7 +240,7 @@ export default function Home() {
     const verticalSwipe = Math.abs(dy) > 30 && Math.abs(dy) > Math.abs(dx) * 1.15;
 
     if (horizontalSwipe) {
-      setMode((current) => (current === 'plain' ? 'bubble' : 'plain'));
+      selectMode(mode === 'plain' ? 'bubble' : 'plain');
     }
     else if (verticalSwipe) move(dy > 0 ? 1 : -1);
 
@@ -224,7 +254,7 @@ export default function Home() {
       <div className="phone-viewport" style={{ width: 390 * phoneScale, height: 844 * phoneScale }}>
         <section
           ref={phoneRef}
-          className={`phone phone--${mode}`}
+          className={`phone phone--${mode} ${textExitDirection ? `phone--text-exit-${textExitDirection}` : ''}`}
           style={{ transform: `scale(${phoneScale})` }}
           aria-label={`북북 ${mode === 'plain' ? '일반' : '말풍선'} 읽기 화면`}
           tabIndex={0}
@@ -279,7 +309,7 @@ export default function Home() {
             <Tabs
               value={mode}
               onValueChange={(value) => {
-                if (value === 'plain' || value === 'bubble') setMode(value);
+                if (value === 'plain' || value === 'bubble') selectMode(value);
               }}
               className="mode-tabs"
               aria-label="읽기 형식"
@@ -313,7 +343,7 @@ export default function Home() {
                     aria-current={isActive ? 'step' : undefined}
                     onClick={() => {
                       if (Date.now() < suppressTapUntil.current) return;
-                      setActiveIndex(index);
+                      if (index !== activeIndexRef.current) move(index > activeIndexRef.current ? 1 : -1);
                     }}
                   >
                     {isActive && <span className="counter">{counter}</span>}
@@ -323,7 +353,15 @@ export default function Home() {
               })}
             </div>
             <nav className="bottom-tabbar" aria-label="하단 메뉴">
-              <button type="button" className="bottom-tabbar__item" onClick={() => setActiveIndex(0)} aria-label="처음으로">
+              <button
+                type="button"
+                className="bottom-tabbar__item"
+                onClick={() => {
+                  activeIndexRef.current = 0;
+                  setActiveIndex(0);
+                }}
+                aria-label="처음으로"
+              >
                 <House aria-hidden="true" />
                 <span>처음</span>
               </button>
