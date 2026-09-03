@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Bookmark, BookOpen, House } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BOOK_SENTENCES, TEASER_SENTENCES } from './book-data';
 
 type ReadingLine = {
@@ -61,6 +63,7 @@ export default function Home() {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [mode, setMode] = useState<'plain' | 'bubble'>('plain');
+  const [saved, setSaved] = useState(false);
   const [phoneScale, setPhoneScale] = useState(1);
   const phoneRef = useRef<HTMLElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
@@ -69,6 +72,9 @@ export default function Home() {
   const wheelDirection = useRef(0);
   const wheelTriggered = useRef(false);
   const wheelResetTimer = useRef<number | null>(null);
+  const scrollAnimation = useRef<number | null>(null);
+  const previousMode = useRef(mode);
+  const hasPositionedRail = useRef(false);
   const gesture = useRef<GestureStart | null>(null);
   const touchGesture = useRef<GestureStart | null>(null);
   const suppressTapUntil = useRef(0);
@@ -97,14 +103,53 @@ export default function Home() {
   );
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
+    const modeChanged = previousMode.current !== mode;
+    previousMode.current = mode;
+
+    if (scrollAnimation.current !== null) {
+      window.cancelAnimationFrame(scrollAnimation.current);
+      scrollAnimation.current = null;
+    }
+
+    const layoutFrame = window.requestAnimationFrame(() => {
       const rail = railRef.current;
       const target = lineRefs.current[activeIndex];
       if (!rail || !target) return;
-      const centeredTop = target.offsetTop - rail.clientHeight / 2 + target.clientHeight / 2;
-      rail.scrollTo({ top: centeredTop, behavior: 'smooth' });
+      const targetTop = target.offsetTop - rail.clientHeight / 2 + target.clientHeight / 2 - 34;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (!hasPositionedRail.current || modeChanged || reducedMotion) {
+        rail.scrollTop = targetTop;
+        hasPositionedRail.current = true;
+        return;
+      }
+
+      const startTop = rail.scrollTop;
+      const distance = targetTop - startTop;
+      const duration = mode === 'bubble' ? 520 : 460;
+      const startedAt = window.performance.now();
+
+      const animate = (now: number) => {
+        const progress = Math.min(1, (now - startedAt) / duration);
+        const eased = progress < 0.5
+          ? 4 * progress * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        rail.scrollTop = startTop + distance * eased;
+
+        if (progress < 1) scrollAnimation.current = window.requestAnimationFrame(animate);
+        else scrollAnimation.current = null;
+      };
+
+      scrollAnimation.current = window.requestAnimationFrame(animate);
     });
-    return () => window.cancelAnimationFrame(frame);
+
+    return () => {
+      window.cancelAnimationFrame(layoutFrame);
+      if (scrollAnimation.current !== null) {
+        window.cancelAnimationFrame(scrollAnimation.current);
+        scrollAnimation.current = null;
+      }
+    };
   }, [activeIndex, mode]);
 
   useEffect(() => {
@@ -231,6 +276,20 @@ export default function Home() {
         >
           <span className="speaker" aria-hidden="true" />
           <div className="phone-screen">
+            <Tabs
+              value={mode}
+              onValueChange={(value) => {
+                if (value === 'plain' || value === 'bubble') setMode(value);
+              }}
+              className="mode-tabs"
+              aria-label="읽기 형식"
+            >
+              <TabsList className="mode-tabs__list">
+                <TabsTrigger value="plain" className="mode-tabs__trigger">일반</TabsTrigger>
+                <span className="mode-tabs__divider" aria-hidden="true" />
+                <TabsTrigger value="bubble" className="mode-tabs__trigger">말풍선</TabsTrigger>
+              </TabsList>
+            </Tabs>
             <div className="sentence-rail" ref={railRef} aria-live="polite">
               {lines.map((line, index) => {
                 const isActive = index === activeIndex;
@@ -258,6 +317,25 @@ export default function Home() {
                 );
               })}
             </div>
+            <nav className="bottom-tabbar" aria-label="하단 메뉴">
+              <button type="button" className="bottom-tabbar__item" onClick={() => setActiveIndex(0)} aria-label="처음으로">
+                <House aria-hidden="true" />
+                <span>처음</span>
+              </button>
+              <button type="button" className="bottom-tabbar__item bottom-tabbar__item--active" aria-current="page">
+                <BookOpen aria-hidden="true" />
+                <span>읽기</span>
+              </button>
+              <button
+                type="button"
+                className={`bottom-tabbar__item ${saved ? 'bottom-tabbar__item--saved' : ''}`}
+                onClick={() => setSaved((current) => !current)}
+                aria-pressed={saved}
+              >
+                <Bookmark aria-hidden="true" fill={saved ? 'currentColor' : 'none'} />
+                <span>저장</span>
+              </button>
+            </nav>
           </div>
         </section>
       </div>
