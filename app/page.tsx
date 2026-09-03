@@ -66,7 +66,8 @@ export default function Home() {
   const wheelDelta = useRef(0);
   const wheelTriggered = useRef(false);
   const wheelResetTimer = useRef<number | null>(null);
-  const gesture = useRef<{ x: number; y: number } | null>(null);
+  const gesture = useRef<{ x: number; y: number; moved: boolean } | null>(null);
+  const suppressTap = useRef(false);
 
   useEffect(() => {
     const fitPhone = () => {
@@ -150,8 +151,18 @@ export default function Home() {
     if (!gesture.current) return;
     const dx = gesture.current.x - x;
     const dy = gesture.current.y - y;
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 38) setMode(dx > 0 ? 'bubble' : 'plain');
-    else if (Math.abs(dy) > 38) move(dy > 0 ? 1 : -1);
+    const horizontalSwipe = Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy) * 1.15;
+    const verticalSwipe = Math.abs(dy) > 30 && Math.abs(dy) > Math.abs(dx) * 1.15;
+
+    if (horizontalSwipe) setMode(dx > 0 ? 'bubble' : 'plain');
+    else if (verticalSwipe) move(dy > 0 ? 1 : -1);
+
+    if (horizontalSwipe || verticalSwipe || gesture.current.moved) {
+      suppressTap.current = true;
+      window.requestAnimationFrame(() => {
+        suppressTap.current = false;
+      });
+    }
     gesture.current = null;
   };
 
@@ -165,10 +176,24 @@ export default function Home() {
           aria-label={`북북 ${mode === 'plain' ? '일반' : '말풍선'} 읽기 화면`}
           tabIndex={0}
           onPointerDown={(event) => {
-            gesture.current = { x: event.clientX, y: event.clientY };
+            gesture.current = { x: event.clientX, y: event.clientY, moved: false };
             event.currentTarget.setPointerCapture(event.pointerId);
           }}
-          onPointerUp={(event) => finishGesture(event.clientX, event.clientY)}
+          onPointerMove={(event) => {
+            if (!gesture.current) return;
+            const dx = Math.abs(event.clientX - gesture.current.x);
+            const dy = Math.abs(event.clientY - gesture.current.y);
+            if (Math.max(dx, dy) > 8) gesture.current.moved = true;
+          }}
+          onPointerUp={(event) => {
+            finishGesture(event.clientX, event.clientY);
+            if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+              event.currentTarget.releasePointerCapture(event.pointerId);
+            }
+          }}
+          onPointerCancel={() => {
+            gesture.current = null;
+          }}
         >
           <span className="speaker" aria-hidden="true" />
           <div className="phone-screen">
@@ -188,7 +213,10 @@ export default function Home() {
                     ref={(node) => { lineRefs.current[index] = node; }}
                     className={`reading-line ${fitClass} ${isActive ? 'reading-line--active' : ''}`}
                     aria-current={isActive ? 'step' : undefined}
-                    onClick={() => setActiveIndex(index)}
+                    onClick={() => {
+                      if (suppressTap.current) return;
+                      setActiveIndex(index);
+                    }}
                   >
                     {isActive && <span className="counter">{counter}</span>}
                     <p>{line.text}</p>

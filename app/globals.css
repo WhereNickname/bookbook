@@ -18,7 +18,13 @@
 
 :root { --background: #fff; --foreground: #0b0b0b; }
 * { box-sizing: border-box; }
-html, body { min-height: 100%; margin: 0; background: #ececec; color: #0b0b0b; }
+html, body {
+  min-height: 100%;
+  margin: 0;
+  background: #ececec;
+  color: #0b0b0b;
+  overscroll-behavior: none;
+}
 body { font-family: 'Pretendard', sans-serif; }
 
 .prototype-stage {
