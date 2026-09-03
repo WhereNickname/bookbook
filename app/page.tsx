@@ -64,6 +64,7 @@ export default function Home() {
   const railRef = useRef<HTMLDivElement>(null);
   const lineRefs = useRef<Array<HTMLDivElement | null>>([]);
   const wheelDelta = useRef(0);
+  const wheelDirection = useRef(0);
   const wheelTriggered = useRef(false);
   const wheelResetTimer = useRef<number | null>(null);
   const gesture = useRef<{ x: number; y: number; moved: boolean } | null>(null);
@@ -104,28 +105,35 @@ export default function Home() {
   }, [activeIndex, mode]);
 
   useEffect(() => {
-    const phone = phoneRef.current;
-    if (!phone) return;
-
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
+      const direction = Math.sign(event.deltaY);
+      if (direction === 0) return;
+
+      if (wheelDirection.current !== 0 && wheelDirection.current !== direction) {
+        wheelDelta.current = 0;
+        wheelTriggered.current = false;
+      }
+
+      wheelDirection.current = direction;
       wheelDelta.current += event.deltaY;
 
       if (wheelResetTimer.current !== null) window.clearTimeout(wheelResetTimer.current);
       wheelResetTimer.current = window.setTimeout(() => {
         wheelDelta.current = 0;
+        wheelDirection.current = 0;
         wheelTriggered.current = false;
         wheelResetTimer.current = null;
-      }, 220);
+      }, 240);
 
-      if (wheelTriggered.current || Math.abs(wheelDelta.current) < 80) return;
+      if (wheelTriggered.current || Math.abs(wheelDelta.current) < 48) return;
       wheelTriggered.current = true;
-      move(wheelDelta.current > 0 ? 1 : -1);
+      move(direction > 0 ? 1 : -1);
     };
 
-    phone.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('wheel', onWheel, { passive: false });
     return () => {
-      phone.removeEventListener('wheel', onWheel);
+      window.removeEventListener('wheel', onWheel);
       if (wheelResetTimer.current !== null) window.clearTimeout(wheelResetTimer.current);
     };
   }, [move]);
