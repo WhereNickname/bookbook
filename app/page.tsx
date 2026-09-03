@@ -132,7 +132,7 @@ export default function Home() {
       }
 
       const startTop = rail.scrollTop;
-      const duration = mode === 'bubble' ? 440 : 380;
+      const duration = mode === 'bubble' ? 440 : 300;
       const startedAt = window.performance.now();
 
       const animate = (now: number) => {
