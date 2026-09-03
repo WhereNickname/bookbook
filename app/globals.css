@@ -3,117 +3,238 @@
 @import 'shadcn/tailwind.css';
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
-@font-face { font-family: 'Bookk Myungjo'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/BookkMyungjo-Lt.woff2') format('woff2'); font-weight: 300; font-display: swap; }
-@font-face { font-family: 'Bookk Myungjo'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/BookkMyungjo-Bd.woff2') format('woff2'); font-weight: 700; font-display: swap; }
-@font-face { font-family: 'Bookk Gothic'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/BookkGothic-Lt.woff2') format('woff2'); font-weight: 300; font-display: swap; }
-@font-face { font-family: 'Bookk Gothic'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/BookkGothic-Bd.woff2') format('woff2'); font-weight: 700; font-display: swap; }
-
-:root { --ink: #171613; --paper: #f7f4ec; --warm: #e45732; --muted: #7a7770; --line: rgba(23,22,19,.14); --background: #f7f4ec; --foreground: #171613; }
-* { box-sizing: border-box; }
-html, body { margin: 0; min-height: 100%; background: var(--paper); color: var(--ink); }
-body { font-family: 'Pretendard', sans-serif; }
-button, a { font: inherit; }
-button { color: inherit; }
-.library-screen { min-height: 100vh; overflow-x: hidden; background: radial-gradient(circle at 82% 12%, rgba(228,87,50,.10), transparent 28rem), var(--paper); }
-.topbar { height: 82px; max-width: 1240px; margin: auto; padding: 0 34px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
-.wordmark { color: var(--ink); text-decoration: none; font-family: 'Bookk Gothic', sans-serif; font-size: 25px; font-weight: 700; letter-spacing: -.08em; }
-.wordmark span { color: var(--warm); }
-.topbar-actions { display: flex; align-items: center; gap: 20px; }
-.text-button, .avatar, .icon-button { border: 0; background: none; cursor: pointer; }
-.text-button { font-size: 13px; font-weight: 600; }
-.avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--ink); color: white; font-family: 'Bookk Gothic'; }
-.library-intro { max-width: 1172px; margin: 0 auto; padding: clamp(68px,10vh,116px) 34px 70px; }
-.eyebrow, .section-kicker { color: var(--warm); font-size: 11px; font-weight: 700; letter-spacing: .16em; }
-.library-intro h1 { margin: 18px 0; max-width: 760px; font-family: 'Bookk Myungjo', serif; font-size: clamp(42px,6.5vw,78px); line-height: 1.14; letter-spacing: -.055em; font-weight: 700; }
-.library-intro > p:last-child { color: var(--muted); font-size: 16px; letter-spacing: -.02em; }
-.shelf { max-width: 1240px; margin: auto; padding: 0 34px 60px; }
-.section-heading { display: flex; align-items: end; justify-content: space-between; margin-bottom: 22px; }
-.section-heading h2 { margin: 7px 0 0; font-size: 22px; letter-spacing: -.04em; }
-.swipe-hint { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; }
-.book-list { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(260px,1fr); gap: 16px; overflow-x: auto; padding-bottom: 16px; scrollbar-width: none; scroll-snap-type: x mandatory; }
-.book-list::-webkit-scrollbar { display: none; }
-.book-card { min-width: 0; scroll-snap-align: start; }
-.book-card button { width: 100%; padding: 18px; position: relative; text-align: left; border: 1px solid var(--line); background: rgba(255,255,255,.48); cursor: default; display: grid; grid-template-columns: 104px 1fr; gap: 19px; transition: transform .25s,border-color .25s,background .25s; }
-.book-card--active button { cursor: pointer; background: rgba(255,255,255,.82); border-color: rgba(228,87,50,.35); }
-.book-card--active button:hover { transform: translateY(-5px); border-color: var(--warm); }
-.book-cover { --cover-color: #333; width: 104px; aspect-ratio: .68; padding: 11px 10px; display: flex; flex-direction: column; justify-content: space-between; background: var(--cover-color); color: white; box-shadow: 7px 9px 16px rgba(25,20,15,.16); font-family: 'Bookk Myungjo',serif; }
-.cover-mark { font-family: 'Bookk Gothic'; font-size: 8px; opacity: .72; }
-.book-cover strong { display: block; font-size: 26px; line-height: 1; letter-spacing: -.09em; }
-.cover-author { display: block; font-size: 8px; opacity: .8; margin-bottom: 5px; }
-.cover-edition { font-size: 5px; letter-spacing: .13em; opacity: .62; }
-.book-copy { align-self: center; min-width: 0; }
-.book-copy > span { color: var(--muted); font-size: 11px; }
-.book-copy h3 { margin: 4px 0 14px; font-family: 'Bookk Myungjo'; font-size: 24px; letter-spacing: -.04em; }
-.book-copy p { min-height: 42px; margin: 0 0 14px; font-family: 'Bookk Myungjo'; font-size: 14px; line-height: 1.5; }
-.book-copy small { color: var(--muted); font-family: 'Bookk Gothic'; font-size: 10px; }
-.start-badge { position: absolute; right: 16px; bottom: 14px; color: var(--warm); display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; }
-.library-footer { max-width: 1172px; margin: 0 auto; padding: 14px 0 34px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
-.reader-screen { height: 100svh; overflow: hidden; position: relative; background: #fbfaf6; user-select: none; touch-action: none; }
-.reader-header { position: relative; z-index: 5; height: 74px; max-width: 720px; margin: auto; padding: 0 22px; display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; }
-.icon-button { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; transition: background .2s; }
-.icon-button:hover { background: rgba(23,22,19,.06); }
-.icon-button.is-saved { color: var(--warm); }
-.reader-book { justify-self: center; display: flex; align-items: center; gap: 9px; }
-.book-cover--small { width: 24px; height: 33px; min-width: 24px; padding: 3px; box-shadow: 2px 3px 5px rgba(0,0,0,.12); }
-.book-cover--small > * { display: none; }
-.reader-book div { display: flex; flex-direction: column; }
-.reader-book strong { font-family: 'Bookk Myungjo'; font-size: 13px; }
-.reader-book span { color: var(--muted); font-size: 8px; margin-top: 2px; }
-.mode-tabs { position: relative; z-index: 4; width: 136px; height: 33px; margin: 2px auto 0; padding: 3px; display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 99px; background: rgba(255,255,255,.6); }
-.mode-tabs button { position: relative; z-index: 2; border: 0; background: transparent; cursor: pointer; font-size: 10px; font-weight: 600; }
-.mode-tabs button[aria-selected='false'] { color: var(--muted); }
-.mode-tabs button[aria-selected='true'] { color: white; }
-.tab-indicator { position: absolute; top: 3px; width: 63px; height: 25px; border-radius: 99px; background: var(--ink); transition: transform .35s cubic-bezier(.22,.8,.25,1); }
-.tab-indicator--focus { transform: translateX(3px); }
-.tab-indicator--bubble { transform: translateX(66px); }
-.reader-stage { height: calc(100svh - 109px); display: flex; flex-direction: column; align-items: center; }
-.reader-phase { margin: clamp(38px,7vh,70px) 0 0; color: var(--warm); font-size: 10px; font-weight: 700; letter-spacing: .14em; }
-.sentence-stack { width: min(760px,86vw); flex: 1; display: grid; grid-template-rows: 1fr 1.28fr 1fr; align-items: center; animation: sentence-in .48s cubic-bezier(.22,.8,.25,1); }
-@keyframes sentence-in { from { opacity: .25; transform: translateY(18px); } to { opacity: 1; transform: none; } }
-.sentence { border: 0; background: none; text-align: center; }
-button.sentence { cursor: pointer; }
-button.sentence:disabled { cursor: default; }
-.sentence--previous,.sentence--next { max-width: 600px; margin: auto; color: #8d8b86; font-family: 'Pretendard'; font-size: clamp(13px,1.5vw,17px); line-height: 1.7; opacity: .68; }
-.sentence--previous { align-self: end; padding-bottom: 18px; }
-.sentence--next { align-self: start; padding-top: 18px; }
-.current-wrap { text-align: center; }
-.counter { display: block; margin-bottom: 17px; font-family: 'Bookk Gothic'; font-size: 14px; font-weight: 700; }
-.sentence--current { max-width: 700px; margin: auto; font-family: 'Bookk Myungjo'; font-size: clamp(34px,5.2vw,61px); font-weight: 700; line-height: 1.35; letter-spacing: -.065em; word-break: keep-all; }
-.reader-controls { position: absolute; z-index: 5; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 14px; }
-.mode-guide { border: 0; background: none; display: flex; align-items: center; gap: 7px; color: #88857f; font-size: 9px; cursor: pointer; white-space: nowrap; }
-.down-button { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: rgba(255,255,255,.72); cursor: pointer; animation: nudge 2s infinite; }
-.down-button:disabled { opacity: .2; }
-@keyframes nudge { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
-.progress-line { position: absolute; z-index: 7; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(23,22,19,.06); }
-.progress-line span { display: block; height: 100%; background: var(--warm); transition: width .35s ease; }
-.reader-screen--bubble { background: #f9f6ef; }
-.reader-screen--bubble .sentence-stack { width: min(670px,88vw); grid-template-rows: .9fr 1.45fr .9fr; }
-.reader-screen--bubble .sentence { position: relative; border: 2px solid #25231f; background: #fffefa; color: var(--ink); }
-.reader-screen--bubble .sentence::after { content: ''; position: absolute; width: 21px; height: 21px; background: #fffefa; border-left: 2px solid #25231f; border-bottom: 2px solid #25231f; transform: rotate(-23deg) skew(-8deg); }
-.reader-screen--bubble .sentence--previous { max-width: 420px; padding: 24px 31px; border-radius: 45% 54% 48% 52% / 55% 44% 56% 45%; transform: rotate(-.7deg); }
-.reader-screen--bubble .sentence--previous::after { left: 30px; bottom: -9px; }
-.reader-screen--bubble .current-wrap { position: relative; }
-.reader-screen--bubble .counter { position: absolute; z-index: 2; left: 50%; top: -28px; transform: translateX(-50%); }
-.reader-screen--bubble .sentence--current { padding: clamp(42px,7vw,76px) clamp(36px,7vw,82px); border-radius: 48% 52% 45% 55% / 45% 50% 50% 55%; font-size: clamp(28px,4.5vw,50px); transform: rotate(.35deg); }
-.reader-screen--bubble .sentence--current::after { left: 50px; bottom: -11px; width: 29px; height: 29px; }
-.reader-screen--bubble .sentence--next { max-width: 390px; padding: 23px 29px; border-radius: 52% 47% 55% 45% / 49% 55% 45% 51%; transform: rotate(.6deg); }
-.reader-screen--bubble .sentence--next::after { right: 38px; top: -9px; transform: rotate(157deg) skew(-8deg); }
-@media (max-width: 700px) {
-  .topbar { height: 68px; padding: 0 20px; }
-  .library-intro { padding: 58px 20px 52px; }
-  .library-intro h1 { font-size: 43px; }
-  .library-intro > p:last-child { max-width: 320px; font-size: 14px; line-height: 1.6; }
-  .shelf { padding: 0 20px 42px; }
-  .swipe-hint { display: none; }
-  .book-list { grid-auto-columns: min(82vw,330px); }
-  .book-card button { grid-template-columns: 92px 1fr; padding: 15px; }
-  .book-cover { width: 92px; }
-  .library-footer { margin: 0 20px; }
-  .reader-phase { margin-top: 28px; }
-  .sentence-stack { width: 88vw; grid-template-rows: .92fr 1.4fr .92fr; }
-  .sentence--current { font-size: clamp(32px,10vw,46px); line-height: 1.42; }
-  .sentence--previous,.sentence--next { max-width: 82vw; font-size: 13px; }
-  .reader-screen--bubble .sentence--current { padding: 52px 30px; font-size: clamp(28px,8.7vw,40px); }
-  .reader-screen--bubble .sentence--previous,.reader-screen--bubble .sentence--next { max-width: 76vw; padding: 20px 24px; }
+@font-face {
+  font-family: 'Bookk Myungjo';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/BookkMyungjo-Bd.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
 }
-@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+@font-face {
+  font-family: 'Bookk Gothic';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/BookkGothic-Bd.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root { --background: #fff; --foreground: #0b0b0b; }
+* { box-sizing: border-box; }
+html, body { min-height: 100%; margin: 0; background: #ececec; color: #0b0b0b; }
+body { font-family: 'Pretendard', sans-serif; }
+
+.prototype-stage {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  position: relative;
+  padding: 24px 16px 54px;
+}
+
+.phone {
+  width: 390px;
+  height: 844px;
+  position: relative;
+  overflow: hidden;
+  border: 8px solid #0a0a0a;
+  border-radius: 48px;
+  background: #fff;
+  box-shadow: 0 28px 70px rgba(0,0,0,.20), 0 5px 16px rgba(0,0,0,.16);
+  touch-action: none;
+  user-select: none;
+  outline: none;
+  transform-origin: top left;
+}
+
+.phone-viewport {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.speaker {
+  position: absolute;
+  z-index: 10;
+  top: 12px;
+  left: 50%;
+  width: 76px;
+  height: 20px;
+  transform: translateX(-50%);
+  border-radius: 20px;
+  background: #0a0a0a;
+}
+
+.phone-screen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 39px;
+  background: #fff;
+}
+
+.sentence-rail {
+  height: 100%;
+  overflow-y: hidden;
+  overflow-anchor: none;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding: 397px 31px;
+}
+.sentence-rail::-webkit-scrollbar { display: none; }
+
+.reading-line {
+  width: 100%;
+  margin: 0;
+  scroll-snap-align: center;
+  color: #707070;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.9;
+  letter-spacing: -.026em;
+  text-align: left;
+  word-break: keep-all;
+  cursor: pointer;
+  transition: color .24s ease, padding .4s ease;
+}
+.reading-line p { margin: 0; }
+
+.reading-line--active {
+  padding: 68px 0;
+  color: #090909;
+  text-align: center;
+  cursor: default;
+}
+
+.reading-line--active p {
+  font-family: 'Bookk Myungjo', serif;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.38;
+  letter-spacing: -.065em;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.counter {
+  display: block;
+  margin-bottom: 12px;
+  font-family: 'Bookk Gothic', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.phone--bubble .sentence-rail { padding-inline: 23px; }
+
+.phone--bubble .reading-line {
+  width: 72%;
+  max-width: none;
+  min-height: 0;
+  aspect-ratio: 1 / 1;
+  margin: -18px auto;
+  padding: 24% 20% 22%;
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #111;
+  font-family: 'Bookk Myungjo', serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.55;
+  letter-spacing: -.035em;
+  text-align: center;
+  transform: none;
+}
+
+.phone--bubble .reading-line::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background: url('/speech-bubble.jpg') center / contain no-repeat;
+  transform: translate(-4.3%, -1.5%);
+}
+
+.phone--bubble .reading-line:nth-child(even)::before {
+  transform: translate(4.3%, 1.5%) rotate(180deg);
+}
+
+.phone--bubble .reading-line:nth-child(3n)::before {
+  transform: translate(4.3%, -1.5%) scaleX(-1);
+}
+
+.phone--bubble .reading-line p,
+.phone--bubble .reading-line .counter {
+  position: relative;
+  z-index: 1;
+}
+
+.phone--bubble .reading-line p {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.phone--bubble .reading-line--fit-short { font-size: 10px; }
+.phone--bubble .reading-line--fit-medium { font-size: 8.5px; }
+.phone--bubble .reading-line--fit-tight { font-size: 7px; line-height: 1.5; }
+
+.phone--bubble .reading-line--active {
+  width: 116%;
+  max-width: none;
+  min-height: 0;
+  aspect-ratio: 1 / 1;
+  margin: -4px -8%;
+  padding: 25% 22.5% 23%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.phone--bubble .reading-line--active p {
+  width: 100%;
+  min-width: 0;
+  font-family: 'Bookk Myungjo', serif;
+  font-size: 17px;
+  line-height: 1.5;
+  letter-spacing: -.045em;
+}
+
+.phone--bubble .reading-line--active.reading-line--fit-medium p { font-size: 14px; }
+.phone--bubble .reading-line--active.reading-line--fit-tight p { font-size: 11px; line-height: 1.55; }
+
+.phone--bubble .reading-line--active::before,
+.phone--bubble .reading-line--active:nth-child(even)::before,
+.phone--bubble .reading-line--active:nth-child(3n)::before {
+  transform: translate(-4.3%, -1.5%);
+}
+
+.phone--bubble .counter {
+  display: none;
+}
+
+.desktop-note {
+  position: absolute;
+  bottom: 20px;
+  margin: 0;
+  color: #777;
+  font-size: 11px;
+  letter-spacing: -.02em;
+}
+
+@media (max-width: 520px) {
+  .prototype-stage { min-height: 100svh; padding: 6px; }
+  .desktop-note { display: none; }
+  .phone--bubble .reading-line--fit-short { font-size: 10px; }
+  .phone--bubble .reading-line--fit-medium { font-size: 8.5px; }
+  .phone--bubble .reading-line--fit-tight { font-size: 7px; }
+  .phone--bubble .reading-line--active.reading-line--fit-short p { font-size: 17px; }
+  .phone--bubble .reading-line--active.reading-line--fit-medium p { font-size: 14px; }
+  .phone--bubble .reading-line--active.reading-line--fit-tight p { font-size: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reading-line { transition: none; }
+  .sentence-rail { scroll-behavior: auto; }
+}
