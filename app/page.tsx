@@ -120,7 +120,7 @@ export default function Home() {
         setActiveIndex(target);
         setTextExitDirection(null);
         textTransitionTimer.current = null;
-      }, 430);
+      }, 250);
       return;
     }
 
@@ -156,7 +156,7 @@ export default function Home() {
 
       const startTop = rail.scrollTop;
       const distance = targetTop - startTop;
-      const duration = mode === 'bubble' ? 520 : 460;
+      const duration = mode === 'bubble' ? 440 : 280;
       const startedAt = window.performance.now();
 
       const animate = (now: number) => {

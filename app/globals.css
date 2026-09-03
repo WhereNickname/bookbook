@@ -172,18 +172,20 @@ body { font-family: 'Pretendard', sans-serif; }
 }
 
 .phone--plain .reading-line p {
+  width: 100%;
   font-size: 14px;
   line-height: 1.9;
   opacity: .78;
   transform: translateY(0) scale(.97);
   transform-origin: center;
-  will-change: transform, font-size, opacity;
+  will-change: width, transform, font-size, opacity;
   transition:
-    transform .42s cubic-bezier(.4, 0, .2, 1),
-    font-size .42s cubic-bezier(.4, 0, .2, 1),
-    line-height .42s cubic-bezier(.4, 0, .2, 1),
-    letter-spacing .42s cubic-bezier(.4, 0, .2, 1),
-    opacity .34s ease;
+    width .24s linear,
+    transform .24s cubic-bezier(.4, 0, .2, 1),
+    font-size .24s linear,
+    line-height .24s linear,
+    letter-spacing .24s linear,
+    opacity .18s ease;
 }
 
 .phone--plain .reading-line--past p {
@@ -197,6 +199,8 @@ body { font-family: 'Pretendard', sans-serif; }
 }
 
 .phone--plain .reading-line--active p {
+  width: 86%;
+  margin-inline: auto;
   font-family: 'Bookk Myungjo', serif;
   font-size: 25px;
   font-weight: 700;
@@ -207,19 +211,23 @@ body { font-family: 'Pretendard', sans-serif; }
 }
 
 .phone--plain.phone--text-exit-next .reading-line--active p {
+  width: 100%;
   font-size: 14px;
   line-height: 1.9;
   letter-spacing: -.026em;
   opacity: .64;
   transform: translateY(-30px) scale(.94);
+  text-wrap: wrap;
 }
 
 .phone--plain.phone--text-exit-previous .reading-line--active p {
+  width: 100%;
   font-size: 14px;
   line-height: 1.9;
   letter-spacing: -.026em;
   opacity: .64;
   transform: translateY(30px) scale(.94);
+  text-wrap: wrap;
 }
 
 .counter {
