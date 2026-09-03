@@ -10,6 +10,8 @@ type ReadingLine = {
   number: number;
 };
 
+type GestureStart = { x: number; y: number; moved: boolean };
+
 function splitIntoBeats(text: string, maximumGlyphs = 26) {
   const words = text.trim().split(/\s+/);
   const beats: string[] = [];
@@ -67,8 +69,9 @@ export default function Home() {
   const wheelDirection = useRef(0);
   const wheelTriggered = useRef(false);
   const wheelResetTimer = useRef<number | null>(null);
-  const gesture = useRef<{ x: number; y: number; moved: boolean } | null>(null);
-  const suppressTap = useRef(false);
+  const gesture = useRef<GestureStart | null>(null);
+  const touchGesture = useRef<GestureStart | null>(null);
+  const suppressTapUntil = useRef(0);
 
   useEffect(() => {
     const fitPhone = () => {
@@ -155,23 +158,20 @@ export default function Home() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [move]);
 
-  const finishGesture = (x: number, y: number) => {
-    if (!gesture.current) return;
-    const dx = gesture.current.x - x;
-    const dy = gesture.current.y - y;
-    const horizontalSwipe = Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy) * 1.15;
+  const finishGesture = (start: GestureStart, x: number, y: number) => {
+    const dx = start.x - x;
+    const dy = start.y - y;
+    const horizontalSwipe = Math.abs(dx) > 22 && Math.abs(dx) > Math.abs(dy) * 1.08;
     const verticalSwipe = Math.abs(dy) > 30 && Math.abs(dy) > Math.abs(dx) * 1.15;
 
-    if (horizontalSwipe) setMode(dx > 0 ? 'bubble' : 'plain');
+    if (horizontalSwipe) {
+      setMode((current) => (current === 'plain' ? 'bubble' : 'plain'));
+    }
     else if (verticalSwipe) move(dy > 0 ? 1 : -1);
 
-    if (horizontalSwipe || verticalSwipe || gesture.current.moved) {
-      suppressTap.current = true;
-      window.requestAnimationFrame(() => {
-        suppressTap.current = false;
-      });
+    if (horizontalSwipe || verticalSwipe || start.moved) {
+      suppressTapUntil.current = Date.now() + 450;
     }
-    gesture.current = null;
   };
 
   return (
@@ -184,23 +184,49 @@ export default function Home() {
           aria-label={`북북 ${mode === 'plain' ? '일반' : '말풍선'} 읽기 화면`}
           tabIndex={0}
           onPointerDown={(event) => {
+            if (event.pointerType === 'touch') return;
             gesture.current = { x: event.clientX, y: event.clientY, moved: false };
             event.currentTarget.setPointerCapture(event.pointerId);
           }}
           onPointerMove={(event) => {
+            if (event.pointerType === 'touch') return;
             if (!gesture.current) return;
             const dx = Math.abs(event.clientX - gesture.current.x);
             const dy = Math.abs(event.clientY - gesture.current.y);
             if (Math.max(dx, dy) > 8) gesture.current.moved = true;
           }}
           onPointerUp={(event) => {
-            finishGesture(event.clientX, event.clientY);
+            if (event.pointerType === 'touch' || !gesture.current) return;
+            finishGesture(gesture.current, event.clientX, event.clientY);
+            gesture.current = null;
             if (event.currentTarget.hasPointerCapture(event.pointerId)) {
               event.currentTarget.releasePointerCapture(event.pointerId);
             }
           }}
-          onPointerCancel={() => {
+          onPointerCancel={(event) => {
+            if (event.pointerType === 'touch') return;
             gesture.current = null;
+          }}
+          onTouchStart={(event) => {
+            if (event.touches.length !== 1) return;
+            const touch = event.touches[0];
+            touchGesture.current = { x: touch.clientX, y: touch.clientY, moved: false };
+          }}
+          onTouchMove={(event) => {
+            if (!touchGesture.current || event.touches.length !== 1) return;
+            const touch = event.touches[0];
+            const dx = Math.abs(touch.clientX - touchGesture.current.x);
+            const dy = Math.abs(touch.clientY - touchGesture.current.y);
+            if (Math.max(dx, dy) > 6) touchGesture.current.moved = true;
+          }}
+          onTouchEnd={(event) => {
+            if (!touchGesture.current || event.changedTouches.length === 0) return;
+            const touch = event.changedTouches[0];
+            finishGesture(touchGesture.current, touch.clientX, touch.clientY);
+            touchGesture.current = null;
+          }}
+          onTouchCancel={() => {
+            touchGesture.current = null;
           }}
         >
           <span className="speaker" aria-hidden="true" />
@@ -222,7 +248,7 @@ export default function Home() {
                     className={`reading-line ${fitClass} ${isActive ? 'reading-line--active' : ''}`}
                     aria-current={isActive ? 'step' : undefined}
                     onClick={() => {
-                      if (suppressTap.current) return;
+                      if (Date.now() < suppressTapUntil.current) return;
                       setActiveIndex(index);
                     }}
                   >
