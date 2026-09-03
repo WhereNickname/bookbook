@@ -179,19 +179,19 @@ body { font-family: 'Pretendard', sans-serif; }
   transform: translateY(0) scale(.97);
   transform-origin: center;
   transition:
-    width .3s cubic-bezier(.22, 1, .36, 1),
-    font-size .3s cubic-bezier(.22, 1, .36, 1),
-    line-height .3s cubic-bezier(.22, 1, .36, 1),
-    letter-spacing .3s cubic-bezier(.22, 1, .36, 1),
-    transform .3s cubic-bezier(.22, 1, .36, 1),
-    opacity .3s ease;
+    width .8s cubic-bezier(.22, 1, .36, 1),
+    font-size .8s cubic-bezier(.22, 1, .36, 1),
+    line-height .8s cubic-bezier(.22, 1, .36, 1),
+    letter-spacing .8s cubic-bezier(.22, 1, .36, 1),
+    transform .8s cubic-bezier(.22, 1, .36, 1),
+    opacity .8s ease;
 }
 
 .phone--plain .reading-line {
   position: relative;
   transition:
-    color .3s ease,
-    padding .3s cubic-bezier(.22, 1, .36, 1);
+    color .8s ease,
+    padding .8s cubic-bezier(.22, 1, .36, 1);
 }
 
 .phone--plain .reading-line--past p {
