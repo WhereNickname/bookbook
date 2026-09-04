@@ -231,7 +231,7 @@ body { font-family: 'Pretendard', sans-serif; }
   line-height: 1.95;
   letter-spacing: -.025em;
   word-break: keep-all;
-  text-align: right;
+  text-align: left;
   user-select: text;
 }
 
@@ -259,7 +259,7 @@ body { font-family: 'Pretendard', sans-serif; }
 
 .ebook-content > p {
   margin: 0 0 1.35em;
-  text-align: right;
+  text-align: left;
 }
 
 .bottom-tabbar {
