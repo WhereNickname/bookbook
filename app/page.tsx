@@ -16,9 +16,15 @@ type ReadingMode = 'plain' | 'ebook';
 type Typeface = 'bookk' | 'suit' | 'pretendard';
 
 function getActiveLineSize(text: string) {
-  if (text.length > 36) return 'reading-line--dense';
-  if (text.length > 27) return 'reading-line--compact';
+  const characterCount = text.replace(/\s/g, '').length;
+  if (characterCount > 34) return 'reading-line--dense';
+  if (characterCount > 25) return 'reading-line--compact';
   return '';
+}
+
+function startsSupportParagraph(line: ReadingLine) {
+  // 작은 글은 세 문장 안팎으로만 살짝 묶어, 문장마다 문단이 갈라져 보이지 않게 한다.
+  return line.number === 1 || (line.number - 1) % 3 === 0;
 }
 
 const TYPEFACE_OPTIONS: Array<{ id: Typeface; label: string }> = [
@@ -342,7 +348,7 @@ export default function Home() {
                     <div
                       key={line.id}
                       ref={(node) => { lineRefs.current[index] = node; }}
-                      className={`reading-line ${isActive ? `reading-line--active ${getActiveLineSize(line.text)}` : ''}`}
+                      className={`reading-line ${isActive ? `reading-line--active ${getActiveLineSize(line.text)}` : ''} ${!isActive && startsSupportParagraph(line) ? 'reading-line--paragraph-start' : ''}`}
                       aria-current={isActive ? 'step' : undefined}
                       onPointerDown={(event) => {
                         // 데스크톱 클릭은 바깥 제스처 캡처보다 먼저 문장 선택으로 처리한다.

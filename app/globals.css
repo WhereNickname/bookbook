@@ -242,9 +242,10 @@ body { font-family: 'Pretendard', sans-serif; }
   transition: none;
 }
 .reading-line p { margin: 0; }
+.reading-line--paragraph-start:not(:first-child) { margin-top: 10px; }
 
 .reading-line--active {
-  padding: 78px 0;
+  padding: 118px 0;
   color: #090909;
   text-align: center;
   cursor: default;
@@ -261,7 +262,9 @@ body { font-family: 'Pretendard', sans-serif; }
   line-height: var(--active-line-height, 1.38);
   letter-spacing: -.065em;
   text-align: center;
-  text-wrap: balance;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
 }
 
 .reading-line--compact { --active-font-size: 22px; --active-line-height: 1.42; }
@@ -282,7 +285,7 @@ body { font-family: 'Pretendard', sans-serif; }
 }
 
 .phone--plain .reading-line--active p {
-  width: 86%;
+  width: 90%;
   margin-inline: auto;
   font-family: var(--display-font);
   min-height: 106px;
@@ -295,10 +298,10 @@ body { font-family: 'Pretendard', sans-serif; }
 
 .counter {
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 5px;
   font-family: var(--counter-font);
   color: #4a4a4a;
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0;
