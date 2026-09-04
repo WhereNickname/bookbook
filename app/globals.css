@@ -92,7 +92,7 @@ body { font-family: 'Pretendard', sans-serif; }
 
 .mode-tabs__list {
   display: flex;
-  width: 166px;
+  width: 154px;
   height: 34px;
   align-items: center;
   gap: 0;
@@ -106,8 +106,9 @@ body { font-family: 'Pretendard', sans-serif; }
 }
 
 .mode-tabs__trigger {
+  flex: 1 1 0;
   height: 28px;
-  padding: 0 15px;
+  padding: 0;
   border: 0;
   border-radius: 14px;
   background: transparent;

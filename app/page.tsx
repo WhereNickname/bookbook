@@ -83,6 +83,16 @@ export default function Home() {
     setActiveIndex(target);
   }, [lines.length]);
 
+  const jumpTo = useCallback((index: number) => {
+    const target = Math.max(0, Math.min(lines.length - 1, index));
+    if (target === activeIndexRef.current) return;
+
+    // 문장 목록을 눌렀을 때는 중간 문장들을 훑지 않고 바로 해당 위치로 보낸다.
+    hasPositionedRail.current = false;
+    activeIndexRef.current = target;
+    setActiveIndex(target);
+  }, [lines.length]);
+
   useEffect(() => {
     if (scrollAnimation.current !== null) {
       window.cancelAnimationFrame(scrollAnimation.current);
@@ -298,7 +308,7 @@ export default function Home() {
                       aria-current={isActive ? 'step' : undefined}
                       onClick={() => {
                         if (Date.now() < suppressTapUntil.current) return;
-                        if (index !== activeIndexRef.current) move(index > activeIndexRef.current ? 1 : -1);
+                        jumpTo(index);
                       }}
                     >
                       {isActive && <span className="counter">{counter}</span>}
