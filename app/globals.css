@@ -138,7 +138,7 @@ body { font-family: 'Pretendard', sans-serif; }
   overflow-anchor: none;
   overscroll-behavior: contain;
   scrollbar-width: none;
-  padding: 420px 31px 430px;
+  padding: 270px 31px 570px;
 }
 .sentence-rail::-webkit-scrollbar { display: none; }
 
