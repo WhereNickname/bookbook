@@ -81,6 +81,8 @@ export default function Home() {
   const wheelDirection = useRef(0);
   const wheelTriggered = useRef(false);
   const wheelResetTimer = useRef<number | null>(null);
+  const scrollAnimation = useRef<number | null>(null);
+  const hasPositionedRail = useRef(false);
   const activeIndexRef = useRef(0);
   const gesture = useRef<GestureStart | null>(null);
   const touchGesture = useRef<GestureStart | null>(null);
@@ -103,6 +105,7 @@ export default function Home() {
   }, []);
 
   const selectMode = useCallback((nextMode: ReadingMode) => {
+    hasPositionedRail.current = false;
     setMode(nextMode);
   }, []);
 
@@ -116,6 +119,11 @@ export default function Home() {
   }, [lines.length]);
 
   useEffect(() => {
+    if (scrollAnimation.current !== null) {
+      window.cancelAnimationFrame(scrollAnimation.current);
+      scrollAnimation.current = null;
+    }
+
     if (mode !== 'plain') return;
 
     const layoutFrame = window.requestAnimationFrame(() => {
@@ -123,10 +131,39 @@ export default function Home() {
       const target = lineRefs.current[activeIndex];
       if (!rail || !target) return;
       const anchor = rail.clientHeight * .35;
-      rail.scrollTop = target.offsetTop - anchor + target.clientHeight / 2;
+      const targetTop = target.offsetTop - anchor + target.clientHeight / 2;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (!hasPositionedRail.current || reducedMotion) {
+        rail.scrollTop = targetTop;
+        hasPositionedRail.current = true;
+        return;
+      }
+
+      const startTop = rail.scrollTop;
+      const distance = targetTop - startTop;
+      const duration = 460;
+      const startedAt = window.performance.now();
+
+      const animate = (now: number) => {
+        const progress = Math.min(1, (now - startedAt) / duration);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        rail.scrollTop = startTop + distance * eased;
+
+        if (progress < 1) scrollAnimation.current = window.requestAnimationFrame(animate);
+        else scrollAnimation.current = null;
+      };
+
+      scrollAnimation.current = window.requestAnimationFrame(animate);
     });
 
-    return () => window.cancelAnimationFrame(layoutFrame);
+    return () => {
+      window.cancelAnimationFrame(layoutFrame);
+      if (scrollAnimation.current !== null) {
+        window.cancelAnimationFrame(scrollAnimation.current);
+        scrollAnimation.current = null;
+      }
+    };
   }, [activeIndex, mode]);
 
   useEffect(() => {
