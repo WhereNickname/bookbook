@@ -122,7 +122,7 @@ export default function Home() {
       const rail = railRef.current;
       const target = lineRefs.current[activeIndex];
       if (!rail || !target) return;
-      const anchor = rail.clientHeight * .8;
+      const anchor = rail.clientHeight * .52;
       rail.scrollTop = target.offsetTop - anchor + target.clientHeight / 2;
     });
 
