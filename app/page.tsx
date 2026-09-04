@@ -15,6 +15,12 @@ type GestureStart = { x: number; y: number; moved: boolean };
 type ReadingMode = 'plain' | 'ebook';
 type Typeface = 'bookk' | 'suit' | 'pretendard';
 
+function getActiveLineSize(text: string) {
+  if (text.length > 36) return 'reading-line--dense';
+  if (text.length > 27) return 'reading-line--compact';
+  return '';
+}
+
 const TYPEFACE_OPTIONS: Array<{ id: Typeface; label: string }> = [
   { id: 'bookk', label: '부크크' },
   { id: 'suit', label: 'SUIT' },
@@ -336,7 +342,7 @@ export default function Home() {
                     <div
                       key={line.id}
                       ref={(node) => { lineRefs.current[index] = node; }}
-                      className={`reading-line ${isActive ? 'reading-line--active' : ''}`}
+                      className={`reading-line ${isActive ? `reading-line--active ${getActiveLineSize(line.text)}` : ''}`}
                       aria-current={isActive ? 'step' : undefined}
                       onPointerDown={(event) => {
                         // 데스크톱 클릭은 바깥 제스처 캡처보다 먼저 문장 선택으로 처리한다.

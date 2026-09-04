@@ -222,7 +222,7 @@ body { font-family: 'Pretendard', sans-serif; }
   overflow-anchor: none;
   overscroll-behavior: contain;
   scrollbar-width: none;
-  padding: 270px 31px 570px;
+  padding: 270px 38px 570px;
 }
 .sentence-rail::-webkit-scrollbar { display: none; }
 
@@ -230,13 +230,13 @@ body { font-family: 'Pretendard', sans-serif; }
   width: 100%;
   margin: 0;
   scroll-snap-align: center;
-  color: #707070;
+  color: #989898;
   font-family: var(--support-font);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: var(--support-weight);
-  line-height: 1.9;
+  line-height: 1.86;
   letter-spacing: -.026em;
-  text-align: left;
+  text-align: center;
   word-break: keep-all;
   cursor: pointer;
   transition: none;
@@ -244,7 +244,7 @@ body { font-family: 'Pretendard', sans-serif; }
 .reading-line p { margin: 0; }
 
 .reading-line--active {
-  padding: 56px 0;
+  padding: 78px 0;
   color: #090909;
   text-align: center;
   cursor: default;
@@ -252,18 +252,25 @@ body { font-family: 'Pretendard', sans-serif; }
 
 .reading-line--active p {
   font-family: var(--display-font);
-  font-size: 25px;
+  min-height: 106px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--active-font-size, 25px);
   font-weight: var(--display-weight);
-  line-height: 1.38;
+  line-height: var(--active-line-height, 1.38);
   letter-spacing: -.065em;
   text-align: center;
   text-wrap: balance;
 }
 
+.reading-line--compact { --active-font-size: 22px; --active-line-height: 1.42; }
+.reading-line--dense { --active-font-size: 20px; --active-line-height: 1.48; }
+
 .phone--plain .reading-line p {
   width: 100%;
   font-family: var(--support-font);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.9;
   opacity: .72;
   transition: none;
@@ -278,9 +285,10 @@ body { font-family: 'Pretendard', sans-serif; }
   width: 86%;
   margin-inline: auto;
   font-family: var(--display-font);
-  font-size: 25px;
+  min-height: 106px;
+  font-size: var(--active-font-size, 25px);
   font-weight: var(--display-weight);
-  line-height: 1.38;
+  line-height: var(--active-line-height, 1.38);
   letter-spacing: -.065em;
   opacity: 1;
 }
@@ -289,6 +297,7 @@ body { font-family: 'Pretendard', sans-serif; }
   display: block;
   margin-bottom: 12px;
   font-family: var(--counter-font);
+  color: #4a4a4a;
   font-size: 16px;
   font-weight: 700;
   line-height: 1;
