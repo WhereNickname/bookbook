@@ -210,6 +210,7 @@ export default function Home() {
           tabIndex={0}
           onPointerDown={(event) => {
             if (event.pointerType === 'touch') return;
+            if ((event.target as HTMLElement).closest('.mode-tabs')) return;
             gesture.current = { x: event.clientX, y: event.clientY, moved: false };
             event.currentTarget.setPointerCapture(event.pointerId);
           }}
@@ -234,6 +235,7 @@ export default function Home() {
           }}
           onTouchStart={(event) => {
             if (event.touches.length !== 1) return;
+            if ((event.target as HTMLElement).closest('.mode-tabs')) return;
             const touch = event.touches[0];
             touchGesture.current = { x: touch.clientX, y: touch.clientY, moved: false };
           }}
