@@ -1,15 +1,15 @@
 {
-  "name": "sites-project",
+  "name": "bookbook-prototype",
   "version": "0.1.0",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "vinext dev",
-    "build": "vinext build",
+    "dev": "vite --config vite.vercel.config.ts",
+    "build": "vite build --config vite.vercel.config.ts",
     "build:vercel": "vite build --config vite.vercel.config.ts",
-    "start": "wrangler dev --config dist/server/wrangler.json",
+    "start": "vite preview --config vite.vercel.config.ts",
     "lint": "oxlint",
     "format": "oxfmt"
   },
