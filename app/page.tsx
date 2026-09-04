@@ -15,46 +15,12 @@ type ReadingLine = {
 type GestureStart = { x: number; y: number; moved: boolean };
 type ReadingMode = 'plain' | 'ebook';
 
-function splitIntoBeats(text: string, maximumGlyphs = 24) {
-  const words = text.trim().split(/\s+/);
-  const beats: string[] = [];
-  let remaining = words;
-
-  while (remaining.join('').length > maximumGlyphs && remaining.length > 1) {
-    const totalGlyphs = remaining.join('').length;
-    const remainingBeatCount = Math.ceil(totalGlyphs / maximumGlyphs);
-    const targetGlyphs = Math.ceil(totalGlyphs / remainingBeatCount);
-    let bestIndex = 1;
-    let bestScore = Number.POSITIVE_INFINITY;
-
-    for (let index = 1; index < remaining.length; index += 1) {
-      const candidateWords = remaining.slice(0, index);
-      const candidateLength = candidateWords.join('').length;
-      if (candidateLength > maximumGlyphs) break;
-      const lastWord = candidateWords[candidateWords.length - 1].replace(/[,.!?]$/, '');
-      const connectiveEnding = /(며|고|지만|는데|자|면서|다가|도록|더니|라며|하며)$/.test(lastWord);
-      const score = Math.abs(candidateLength - targetGlyphs) - (connectiveEnding ? 4 : 0);
-      if (score < bestScore) {
-        bestIndex = index;
-        bestScore = score;
-      }
-    }
-
-    beats.push(remaining.slice(0, bestIndex).join(' '));
-    remaining = remaining.slice(bestIndex);
-  }
-
-  beats.push(remaining.join(' '));
-  return beats;
-}
-
 export default function Home() {
   const lines = useMemo<ReadingLine[]>(
     () => {
-      const bookBeats = BOOK_SENTENCES.flatMap((text) => splitIntoBeats(text));
       return [
         ...TEASER_SENTENCES.map((text, index) => ({ id: `teaser-${index}`, text, section: 'teaser' as const, number: index + 1 })),
-        ...bookBeats.map((text, index) => ({ id: `book-${index}`, text, section: 'book' as const, number: index + 1 })),
+        ...BOOK_SENTENCES.map((text, index) => ({ id: `book-${index}`, text, section: 'book' as const, number: index + 1 })),
       ];
     },
     [],
