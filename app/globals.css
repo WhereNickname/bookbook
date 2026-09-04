@@ -2,6 +2,7 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+@import url('https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css');
 
 @font-face {
   font-family: 'Bookk Myungjo';
@@ -48,6 +49,29 @@ body { font-family: 'Pretendard', sans-serif; }
   user-select: none;
   outline: none;
   transform-origin: top left;
+  --display-font: 'Bookk Myungjo', serif;
+  --display-weight: 700;
+  --counter-font: 'Bookk Gothic', sans-serif;
+  --support-font: 'Pretendard', sans-serif;
+  --support-weight: 400;
+}
+
+.phone--type-book { }
+
+.phone--type-calm {
+  --display-font: 'Bookk Myungjo', serif;
+  --display-weight: 400;
+  --counter-font: 'SUIT Variable', sans-serif;
+  --support-font: 'SUIT Variable', sans-serif;
+  --support-weight: 480;
+}
+
+.phone--type-modern {
+  --display-font: 'SUIT Variable', sans-serif;
+  --display-weight: 800;
+  --counter-font: 'Bookk Gothic', sans-serif;
+  --support-font: 'Pretendard', sans-serif;
+  --support-weight: 500;
 }
 
 .phone--ebook {
@@ -126,6 +150,72 @@ body { font-family: 'Pretendard', sans-serif; }
   box-shadow: 0 2px 9px rgba(0, 0, 0, .09);
 }
 
+.type-menu {
+  position: absolute;
+  z-index: 20;
+  top: 43px;
+  right: 20px;
+}
+
+.type-menu__toggle {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(15, 15, 15, .08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .76);
+  color: #222;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, .07);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+}
+
+.type-menu__toggle svg { width: 17px; height: 17px; }
+
+.type-menu__panel {
+  width: 168px;
+  position: absolute;
+  top: 41px;
+  right: 0;
+  padding: 8px;
+  border: 1px solid rgba(15, 15, 15, .09);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, .13);
+  backdrop-filter: blur(18px) saturate(165%);
+  -webkit-backdrop-filter: blur(18px) saturate(165%);
+}
+
+.type-menu__panel > p {
+  margin: 3px 7px 6px;
+  color: #777;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.type-menu__option {
+  width: 100%;
+  min-height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #333;
+  text-align: left;
+}
+
+.type-menu__option--active { background: #f2f2f2; }
+.type-menu__option span { display: grid; gap: 1px; }
+.type-menu__option strong { font-family: 'Pretendard', sans-serif; font-size: 12px; font-weight: 650; }
+.type-menu__option small { color: #858585; font-family: 'Pretendard', sans-serif; font-size: 9px; font-weight: 400; }
+.type-menu__option svg { width: 15px; height: 15px; stroke-width: 2.4; }
+
 .mode-tabs__divider {
   width: 1px;
   height: 13px;
@@ -148,9 +238,9 @@ body { font-family: 'Pretendard', sans-serif; }
   margin: 0;
   scroll-snap-align: center;
   color: #707070;
-  font-family: 'Pretendard', sans-serif;
+  font-family: var(--support-font);
   font-size: 14px;
-  font-weight: 400;
+  font-weight: var(--support-weight);
   line-height: 1.9;
   letter-spacing: -.026em;
   text-align: left;
@@ -168,9 +258,9 @@ body { font-family: 'Pretendard', sans-serif; }
 }
 
 .reading-line--active p {
-  font-family: 'Bookk Myungjo', serif;
+  font-family: var(--display-font);
   font-size: 25px;
-  font-weight: 700;
+  font-weight: var(--display-weight);
   line-height: 1.38;
   letter-spacing: -.065em;
   text-align: center;
@@ -179,6 +269,7 @@ body { font-family: 'Pretendard', sans-serif; }
 
 .phone--plain .reading-line p {
   width: 100%;
+  font-family: var(--support-font);
   font-size: 14px;
   line-height: 1.9;
   opacity: .72;
@@ -193,9 +284,9 @@ body { font-family: 'Pretendard', sans-serif; }
 .phone--plain .reading-line--active p {
   width: 86%;
   margin-inline: auto;
-  font-family: 'Bookk Myungjo', serif;
+  font-family: var(--display-font);
   font-size: 25px;
-  font-weight: 700;
+  font-weight: var(--display-weight);
   line-height: 1.38;
   letter-spacing: -.065em;
   opacity: 1;
@@ -204,7 +295,7 @@ body { font-family: 'Pretendard', sans-serif; }
 .counter {
   display: block;
   margin-bottom: 12px;
-  font-family: 'Bookk Gothic', sans-serif;
+  font-family: var(--counter-font);
   font-size: 16px;
   font-weight: 700;
   line-height: 1;

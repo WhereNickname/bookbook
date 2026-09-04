@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Bookmark, BookOpen, House } from 'lucide-react';
+import { Bookmark, BookOpen, Check, House, Menu, X } from 'lucide-react';
 import { BOOK_SENTENCES, TEASER_SENTENCES } from './book-data';
 
 type ReadingLine = {
@@ -13,6 +13,13 @@ type ReadingLine = {
 
 type GestureStart = { x: number; y: number; moved: boolean };
 type ReadingMode = 'plain' | 'ebook';
+type TypographyStyle = 'book' | 'calm' | 'modern';
+
+const TYPOGRAPHY_OPTIONS: Array<{ id: TypographyStyle; label: string; description: string }> = [
+  { id: 'book', label: '책 느낌', description: '명조 중심의 기본 조합' },
+  { id: 'calm', label: '차분하게', description: '가볍고 정돈된 조합' },
+  { id: 'modern', label: '선명하게', description: '또렷한 고딕 중심 조합' },
+];
 
 export default function Home() {
   const lines = useMemo<ReadingLine[]>(
@@ -36,6 +43,8 @@ export default function Home() {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [mode, setMode] = useState<ReadingMode>('plain');
+  const [typography, setTypography] = useState<TypographyStyle>('book');
+  const [isTypographyMenuOpen, setIsTypographyMenuOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const [phoneScale, setPhoneScale] = useState(1);
   const phoneRef = useRef<HTMLElement>(null);
@@ -214,13 +223,13 @@ export default function Home() {
       <div className="phone-viewport" style={{ width: 390 * phoneScale, height: 844 * phoneScale }}>
         <section
           ref={phoneRef}
-          className={`phone phone--${mode}`}
+          className={`phone phone--${mode} phone--type-${typography}`}
           style={{ transform: `scale(${phoneScale})` }}
           aria-label={`북북 ${mode === 'plain' ? '일반' : '전자책'} 읽기 화면`}
           tabIndex={0}
           onPointerDown={(event) => {
             if (event.pointerType === 'touch') return;
-            if ((event.target as HTMLElement).closest('.mode-tabs')) return;
+            if ((event.target as HTMLElement).closest('.mode-tabs, .type-menu')) return;
             gesture.current = { x: event.clientX, y: event.clientY, moved: false };
             event.currentTarget.setPointerCapture(event.pointerId);
           }}
@@ -245,7 +254,7 @@ export default function Home() {
           }}
           onTouchStart={(event) => {
             if (event.touches.length !== 1) return;
-            if ((event.target as HTMLElement).closest('.mode-tabs')) return;
+            if ((event.target as HTMLElement).closest('.mode-tabs, .type-menu')) return;
             const touch = event.touches[0];
             touchGesture.current = { x: touch.clientX, y: touch.clientY, moved: false };
           }}
@@ -268,6 +277,45 @@ export default function Home() {
         >
           <span className="speaker" aria-hidden="true" />
           <div className="phone-screen">
+            <div className="type-menu">
+              <button
+                type="button"
+                className="type-menu__toggle"
+                aria-label="문체 선택 열기"
+                aria-expanded={isTypographyMenuOpen}
+                onPointerDown={(event) => event.stopPropagation()}
+                onTouchStart={(event) => event.stopPropagation()}
+                onClick={() => setIsTypographyMenuOpen((current) => !current)}
+              >
+                {isTypographyMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+              </button>
+              {isTypographyMenuOpen && (
+                <div className="type-menu__panel" role="menu" aria-label="문체 선택">
+                  <p>문체</p>
+                  {TYPOGRAPHY_OPTIONS.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={typography === option.id}
+                      className={`type-menu__option ${typography === option.id ? 'type-menu__option--active' : ''}`}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onTouchStart={(event) => event.stopPropagation()}
+                      onClick={() => {
+                        setTypography(option.id);
+                        setIsTypographyMenuOpen(false);
+                      }}
+                    >
+                      <span>
+                        <strong>{option.label}</strong>
+                        <small>{option.description}</small>
+                      </span>
+                      {typography === option.id && <Check aria-hidden="true" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <div className="mode-tabs" role="tablist" aria-label="읽기 형식">
               <div className="mode-tabs__list">
                 <button
