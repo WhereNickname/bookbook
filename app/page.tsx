@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Bookmark, BookOpen, House } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BOOK_SENTENCES, TEASER_SENTENCES } from './book-data';
 
 type ReadingLine = {
@@ -257,20 +256,33 @@ export default function Home() {
         >
           <span className="speaker" aria-hidden="true" />
           <div className="phone-screen">
-            <Tabs
-              value={mode}
-              onValueChange={(value) => {
-                if (value === 'plain' || value === 'ebook') selectMode(value);
-              }}
-              className="mode-tabs"
-              aria-label="읽기 형식"
-            >
-              <TabsList className="mode-tabs__list">
-                <TabsTrigger value="plain" className="mode-tabs__trigger">일반</TabsTrigger>
+            <div className="mode-tabs" role="tablist" aria-label="읽기 형식">
+              <div className="mode-tabs__list">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === 'plain'}
+                  className={`mode-tabs__trigger ${mode === 'plain' ? 'mode-tabs__trigger--active' : ''}`}
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onTouchStart={(event) => event.stopPropagation()}
+                  onClick={() => selectMode('plain')}
+                >
+                  일반
+                </button>
                 <span className="mode-tabs__divider" aria-hidden="true" />
-                <TabsTrigger value="ebook" className="mode-tabs__trigger">전자책</TabsTrigger>
-              </TabsList>
-            </Tabs>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === 'ebook'}
+                  className={`mode-tabs__trigger ${mode === 'ebook' ? 'mode-tabs__trigger--active' : ''}`}
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onTouchStart={(event) => event.stopPropagation()}
+                  onClick={() => selectMode('ebook')}
+                >
+                  전자책
+                </button>
+              </div>
+            </div>
             {mode === 'plain' ? (
               <div className="sentence-rail" ref={railRef} aria-live="polite">
                 {lines.map((line, index) => {
