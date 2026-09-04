@@ -299,7 +299,7 @@ export default function Home() {
               <div className="sentence-rail" ref={railRef} aria-live="polite">
                 {lines.map((line, index) => {
                   const isActive = index === activeIndex;
-                  const counter = line.section === 'teaser' ? `${line.number}/3` : `${line.number}/${bookBeatCount}`;
+                  const counter = line.section === 'teaser' ? '프롤로그' : `${line.number}/${bookBeatCount}`;
                   return (
                     <div
                       key={line.id}
