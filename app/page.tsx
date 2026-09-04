@@ -13,12 +13,12 @@ type ReadingLine = {
 
 type GestureStart = { x: number; y: number; moved: boolean };
 type ReadingMode = 'plain' | 'ebook';
-type TypographyStyle = 'book' | 'calm' | 'modern';
+type Typeface = 'bookk' | 'suit' | 'pretendard';
 
-const TYPOGRAPHY_OPTIONS: Array<{ id: TypographyStyle; label: string; description: string }> = [
-  { id: 'book', label: '책 느낌', description: '명조 중심의 기본 조합' },
-  { id: 'calm', label: '차분하게', description: '가볍고 정돈된 조합' },
-  { id: 'modern', label: '선명하게', description: '또렷한 고딕 중심 조합' },
+const TYPEFACE_OPTIONS: Array<{ id: Typeface; label: string }> = [
+  { id: 'bookk', label: '부크크' },
+  { id: 'suit', label: 'SUIT' },
+  { id: 'pretendard', label: '프리텐다드' },
 ];
 
 export default function Home() {
@@ -43,7 +43,9 @@ export default function Home() {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [mode, setMode] = useState<ReadingMode>('plain');
-  const [typography, setTypography] = useState<TypographyStyle>('book');
+  const [displayTypeface, setDisplayTypeface] = useState<Typeface>('bookk');
+  const [counterTypeface, setCounterTypeface] = useState<Typeface>('bookk');
+  const [supportTypeface, setSupportTypeface] = useState<Typeface>('pretendard');
   const [isTypographyMenuOpen, setIsTypographyMenuOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const [phoneScale, setPhoneScale] = useState(1);
@@ -223,7 +225,7 @@ export default function Home() {
       <div className="phone-viewport" style={{ width: 390 * phoneScale, height: 844 * phoneScale }}>
         <section
           ref={phoneRef}
-          className={`phone phone--${mode} phone--type-${typography}`}
+          className={`phone phone--${mode} phone--display-${displayTypeface} phone--counter-${counterTypeface} phone--support-${supportTypeface}`}
           style={{ transform: `scale(${phoneScale})` }}
           aria-label={`북북 ${mode === 'plain' ? '일반' : '전자책'} 읽기 화면`}
           tabIndex={0}
@@ -292,27 +294,9 @@ export default function Home() {
               {isTypographyMenuOpen && (
                 <div className="type-menu__panel" role="menu" aria-label="문체 선택">
                   <p>문체</p>
-                  {TYPOGRAPHY_OPTIONS.map((option) => (
-                    <button
-                      key={option.id}
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={typography === option.id}
-                      className={`type-menu__option ${typography === option.id ? 'type-menu__option--active' : ''}`}
-                      onPointerDown={(event) => event.stopPropagation()}
-                      onTouchStart={(event) => event.stopPropagation()}
-                      onClick={() => {
-                        setTypography(option.id);
-                        setIsTypographyMenuOpen(false);
-                      }}
-                    >
-                      <span>
-                        <strong>{option.label}</strong>
-                        <small>{option.description}</small>
-                      </span>
-                      {typography === option.id && <Check aria-hidden="true" />}
-                    </button>
-                  ))}
+                  <TypefacePicker label="중앙 문장" value={displayTypeface} onChange={setDisplayTypeface} />
+                  <TypefacePicker label="프롤로그 · 숫자" value={counterTypeface} onChange={setCounterTypeface} />
+                  <TypefacePicker label="작은 문장" value={supportTypeface} onChange={setSupportTypeface} />
                 </div>
               )}
             </div>
@@ -429,5 +413,37 @@ export default function Home() {
       </div>
       <p className="desktop-note" aria-hidden="true">세로로 문장 이동 · 가로로 일반/전자책 전환</p>
     </main>
+  );
+}
+
+function TypefacePicker({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: Typeface;
+  onChange: (typeface: Typeface) => void;
+}) {
+  return (
+    <section className="type-menu__section" aria-label={label}>
+      <strong>{label}</strong>
+      <div className="type-menu__choices" role="group" aria-label={`${label} 서체`}>
+        {TYPEFACE_OPTIONS.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            aria-pressed={value === option.id}
+            className={value === option.id ? 'type-menu__choice--active' : ''}
+            onPointerDown={(event) => event.stopPropagation()}
+            onTouchStart={(event) => event.stopPropagation()}
+            onClick={() => onChange(option.id)}
+          >
+            {option.label}
+            {value === option.id && <Check aria-hidden="true" />}
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
