@@ -13,6 +13,7 @@ type ReadingLine = {
 };
 
 type GestureStart = { x: number; y: number; moved: boolean };
+type ReadingMode = 'plain' | 'ebook';
 
 function splitIntoBeats(text: string, maximumGlyphs = 24) {
   const words = text.trim().split(/\s+/);
@@ -60,22 +61,27 @@ export default function Home() {
   );
 
   const bookBeatCount = lines.length - TEASER_SENTENCES.length;
+  const ebookParagraphs = useMemo(
+    () => Array.from(
+      { length: Math.ceil(BOOK_SENTENCES.length / 5) },
+      (_, index) => BOOK_SENTENCES.slice(index * 5, index * 5 + 5).join(' '),
+    ),
+    [],
+  );
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const [mode, setMode] = useState<'plain' | 'bubble'>('plain');
+  const [mode, setMode] = useState<ReadingMode>('plain');
   const [saved, setSaved] = useState(false);
   const [phoneScale, setPhoneScale] = useState(1);
   const phoneRef = useRef<HTMLElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
+  const ebookRef = useRef<HTMLDivElement>(null);
   const lineRefs = useRef<Array<HTMLDivElement | null>>([]);
   const wheelDelta = useRef(0);
   const wheelDirection = useRef(0);
   const wheelTriggered = useRef(false);
   const wheelResetTimer = useRef<number | null>(null);
-  const scrollAnimation = useRef<number | null>(null);
   const activeIndexRef = useRef(0);
-  const previousMode = useRef(mode);
-  const hasPositionedRail = useRef(false);
   const gesture = useRef<GestureStart | null>(null);
   const touchGesture = useRef<GestureStart | null>(null);
   const suppressTapUntil = useRef(0);
@@ -96,7 +102,7 @@ export default function Home() {
     return () => window.removeEventListener('resize', fitPhone);
   }, []);
 
-  const selectMode = useCallback((nextMode: 'plain' | 'bubble') => {
+  const selectMode = useCallback((nextMode: ReadingMode) => {
     setMode(nextMode);
   }, []);
 
@@ -110,54 +116,22 @@ export default function Home() {
   }, [lines.length]);
 
   useEffect(() => {
-    const modeChanged = previousMode.current !== mode;
-    previousMode.current = mode;
-
-    if (scrollAnimation.current !== null) {
-      window.cancelAnimationFrame(scrollAnimation.current);
-      scrollAnimation.current = null;
-    }
+    if (mode !== 'plain') return;
 
     const layoutFrame = window.requestAnimationFrame(() => {
       const rail = railRef.current;
       const target = lineRefs.current[activeIndex];
       if (!rail || !target) return;
-      const readTargetTop = () => target.offsetTop - rail.clientHeight / 2 + target.clientHeight / 2 - 34;
-      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      if (!hasPositionedRail.current || modeChanged || reducedMotion) {
-        rail.scrollTop = readTargetTop();
-        hasPositionedRail.current = true;
-        return;
-      }
-
-      const startTop = rail.scrollTop;
-      const duration = mode === 'bubble' ? 440 : 800;
-      const startedAt = window.performance.now();
-
-      const animate = (now: number) => {
-        const progress = Math.min(1, (now - startedAt) / duration);
-        const eased = 1 - Math.pow(1 - progress, 4);
-        rail.scrollTop = startTop + (readTargetTop() - startTop) * eased;
-
-        if (progress < 1) scrollAnimation.current = window.requestAnimationFrame(animate);
-        else scrollAnimation.current = null;
-      };
-
-      scrollAnimation.current = window.requestAnimationFrame(animate);
+      const anchor = rail.clientHeight * .8;
+      rail.scrollTop = target.offsetTop - anchor + target.clientHeight / 2;
     });
 
-    return () => {
-      window.cancelAnimationFrame(layoutFrame);
-      if (scrollAnimation.current !== null) {
-        window.cancelAnimationFrame(scrollAnimation.current);
-        scrollAnimation.current = null;
-      }
-    };
+    return () => window.cancelAnimationFrame(layoutFrame);
   }, [activeIndex, mode]);
 
   useEffect(() => {
     const onWheel = (event: WheelEvent) => {
+      if (mode !== 'plain') return;
       event.preventDefault();
       const direction = Math.sign(event.deltaY);
       if (direction === 0) return;
@@ -188,20 +162,20 @@ export default function Home() {
       window.removeEventListener('wheel', onWheel);
       if (wheelResetTimer.current !== null) window.clearTimeout(wheelResetTimer.current);
     };
-  }, [move]);
+  }, [mode, move]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowDown' || event.key === 'PageDown') {
+      if (mode === 'plain' && (event.key === 'ArrowDown' || event.key === 'PageDown')) {
         event.preventDefault();
         move(1);
       }
-      if (event.key === 'ArrowUp' || event.key === 'PageUp') {
+      if (mode === 'plain' && (event.key === 'ArrowUp' || event.key === 'PageUp')) {
         event.preventDefault();
         move(-1);
       }
       if (event.key === 'ArrowLeft') selectMode('plain');
-      if (event.key === 'ArrowRight') selectMode('bubble');
+      if (event.key === 'ArrowRight') selectMode('ebook');
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
@@ -214,9 +188,9 @@ export default function Home() {
     const verticalSwipe = Math.abs(dy) > 30 && Math.abs(dy) > Math.abs(dx) * 1.15;
 
     if (horizontalSwipe) {
-      selectMode(mode === 'plain' ? 'bubble' : 'plain');
+      selectMode(mode === 'plain' ? 'ebook' : 'plain');
     }
-    else if (verticalSwipe) move(dy > 0 ? 1 : -1);
+    else if (verticalSwipe && mode === 'plain') move(dy > 0 ? 1 : -1);
 
     if (horizontalSwipe || verticalSwipe || start.moved) {
       suppressTapUntil.current = Date.now() + 450;
@@ -230,7 +204,7 @@ export default function Home() {
           ref={phoneRef}
           className={`phone phone--${mode}`}
           style={{ transform: `scale(${phoneScale})` }}
-          aria-label={`북북 ${mode === 'plain' ? '일반' : '말풍선'} 읽기 화면`}
+          aria-label={`북북 ${mode === 'plain' ? '일반' : '전자책'} 읽기 화면`}
           tabIndex={0}
           onPointerDown={(event) => {
             if (event.pointerType === 'touch') return;
@@ -283,7 +257,7 @@ export default function Home() {
             <Tabs
               value={mode}
               onValueChange={(value) => {
-                if (value === 'plain' || value === 'bubble') selectMode(value);
+                if (value === 'plain' || value === 'ebook') selectMode(value);
               }}
               className="mode-tabs"
               aria-label="읽기 형식"
@@ -291,41 +265,44 @@ export default function Home() {
               <TabsList className="mode-tabs__list">
                 <TabsTrigger value="plain" className="mode-tabs__trigger">일반</TabsTrigger>
                 <span className="mode-tabs__divider" aria-hidden="true" />
-                <TabsTrigger value="bubble" className="mode-tabs__trigger">말풍선</TabsTrigger>
+                <TabsTrigger value="ebook" className="mode-tabs__trigger">전자책</TabsTrigger>
               </TabsList>
             </Tabs>
-            <div className="sentence-rail" ref={railRef} aria-live="polite">
-              {lines.map((line, index) => {
-                const isActive = index === activeIndex;
-                const positionClass = index < activeIndex
-                  ? 'reading-line--past'
-                  : index > activeIndex
-                    ? 'reading-line--future'
-                    : 'reading-line--current';
-                const counter = line.section === 'teaser' ? `${line.number}/3` : `${line.number}/${bookBeatCount}`;
-                const glyphCount = line.text.replace(/\s/g, '').length;
-                const fitClass = glyphCount > 42
-                  ? 'reading-line--fit-tight'
-                  : glyphCount > 29
-                    ? 'reading-line--fit-medium'
-                    : 'reading-line--fit-short';
-                return (
-                  <div
-                    key={line.id}
-                    ref={(node) => { lineRefs.current[index] = node; }}
-                    className={`reading-line ${fitClass} ${positionClass} ${isActive ? 'reading-line--active' : ''}`}
-                    aria-current={isActive ? 'step' : undefined}
-                    onClick={() => {
-                      if (Date.now() < suppressTapUntil.current) return;
-                      if (index !== activeIndexRef.current) move(index > activeIndexRef.current ? 1 : -1);
-                    }}
-                  >
-                    {isActive && <span className="counter">{counter}</span>}
-                    <p>{line.text}</p>
-                  </div>
-                );
-              })}
-            </div>
+            {mode === 'plain' ? (
+              <div className="sentence-rail" ref={railRef} aria-live="polite">
+                {lines.map((line, index) => {
+                  const isActive = index === activeIndex;
+                  const counter = line.section === 'teaser' ? `${line.number}/3` : `${line.number}/${bookBeatCount}`;
+                  return (
+                    <div
+                      key={line.id}
+                      ref={(node) => { lineRefs.current[index] = node; }}
+                      className={`reading-line ${isActive ? 'reading-line--active' : ''}`}
+                      aria-current={isActive ? 'step' : undefined}
+                      onClick={() => {
+                        if (Date.now() < suppressTapUntil.current) return;
+                        if (index !== activeIndexRef.current) move(index > activeIndexRef.current ? 1 : -1);
+                      }}
+                    >
+                      {isActive && <span className="counter">{counter}</span>}
+                      <p>{line.text}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="ebook-reader" ref={ebookRef}>
+                <article className="ebook-content">
+                  <header className="ebook-header">
+                    <span>알베르 카뮈</span>
+                    <h1>이방인</h1>
+                  </header>
+                  {ebookParagraphs.map((paragraph, index) => (
+                    <p key={index}>{paragraph}</p>
+                  ))}
+                </article>
+              </div>
+            )}
             <nav className="bottom-tabbar" aria-label="하단 메뉴">
               <button
                 type="button"
@@ -333,6 +310,7 @@ export default function Home() {
                 onClick={() => {
                   activeIndexRef.current = 0;
                   setActiveIndex(0);
+                  ebookRef.current?.scrollTo({ top: 0 });
                 }}
                 aria-label="처음으로"
               >
@@ -356,7 +334,7 @@ export default function Home() {
           </div>
         </section>
       </div>
-      <p className="desktop-note" aria-hidden="true">세로로 문장 이동 · 가로로 읽기 방식 전환</p>
+      <p className="desktop-note" aria-hidden="true">세로로 문장 이동 · 가로로 일반/전자책 전환</p>
     </main>
   );
 }

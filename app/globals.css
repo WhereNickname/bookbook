@@ -50,6 +50,11 @@ body { font-family: 'Pretendard', sans-serif; }
   transform-origin: top left;
 }
 
+.phone--ebook {
+  touch-action: pan-y;
+  user-select: text;
+}
+
 .phone-viewport {
   position: relative;
   flex: 0 0 auto;
@@ -133,7 +138,7 @@ body { font-family: 'Pretendard', sans-serif; }
   overflow-anchor: none;
   overscroll-behavior: contain;
   scrollbar-width: none;
-  padding: 397px 31px;
+  padding: 650px 31px 210px;
 }
 .sentence-rail::-webkit-scrollbar { display: none; }
 
@@ -150,12 +155,12 @@ body { font-family: 'Pretendard', sans-serif; }
   text-align: left;
   word-break: keep-all;
   cursor: pointer;
-  transition: color .38s ease, padding .52s cubic-bezier(.4, 0, .2, 1);
+  transition: none;
 }
 .reading-line p { margin: 0; }
 
 .reading-line--active {
-  padding: 68px 0;
+  padding: 56px 0;
   color: #090909;
   text-align: center;
   cursor: default;
@@ -175,33 +180,13 @@ body { font-family: 'Pretendard', sans-serif; }
   width: 100%;
   font-size: 14px;
   line-height: 1.9;
-  opacity: .78;
-  transform: translateY(0) scale(.97);
-  transform-origin: center;
-  transition:
-    width .8s cubic-bezier(.22, 1, .36, 1),
-    font-size .8s cubic-bezier(.22, 1, .36, 1),
-    line-height .8s cubic-bezier(.22, 1, .36, 1),
-    letter-spacing .8s cubic-bezier(.22, 1, .36, 1),
-    transform .8s cubic-bezier(.22, 1, .36, 1),
-    opacity .8s ease;
+  opacity: .72;
+  transition: none;
 }
 
 .phone--plain .reading-line {
   position: relative;
-  transition:
-    color .8s ease,
-    padding .8s cubic-bezier(.22, 1, .36, 1);
-}
-
-.phone--plain .reading-line--past p {
-  opacity: .68;
-  transform: translateY(-30px) scale(.94);
-}
-
-.phone--plain .reading-line--future p {
-  opacity: .68;
-  transform: translateY(30px) scale(.94);
+  transition: none;
 }
 
 .phone--plain .reading-line--active p {
@@ -213,7 +198,6 @@ body { font-family: 'Pretendard', sans-serif; }
   line-height: 1.38;
   letter-spacing: -.065em;
   opacity: 1;
-  transform: translateY(0) scale(1);
 }
 
 .counter {
@@ -224,107 +208,57 @@ body { font-family: 'Pretendard', sans-serif; }
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0;
-  transition: opacity .3s ease, transform .4s cubic-bezier(.4, 0, .2, 1);
+  transition: none;
 }
 
-.phone--bubble .sentence-rail { padding-inline: 23px; }
-
-.phone--bubble .reading-line {
-  width: 100%;
-  max-width: none;
-  height: 242px;
-  min-height: 242px;
-  margin: 0 auto;
-  padding: 0;
-  position: relative;
-  display: grid;
-  place-items: center;
-  border: 0;
-  background: transparent;
-  color: #111;
-  font-family: 'Bookk Myungjo', serif;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.55;
-  letter-spacing: -.035em;
-  text-align: center;
-  transform: none;
-  transition: color .4s ease, opacity .4s ease;
-}
-
-.phone--bubble .reading-line::before {
-  content: '';
+.ebook-reader {
   position: absolute;
-  z-index: 0;
-  top: 50%;
-  left: 50%;
-  width: 72%;
-  aspect-ratio: 1 / 1;
-  background: url('/speech-bubble.jpg') center / contain no-repeat;
-  transform: translate(-54.3%, -51.5%);
-  transform-origin: center;
-  transition: width .56s cubic-bezier(.4, 0, .2, 1), transform .56s cubic-bezier(.4, 0, .2, 1);
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 112px 34px 126px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 
-.phone--bubble .reading-line:nth-child(even)::before {
-  transform: translate(-45.7%, -48.5%) rotate(180deg);
-}
+.ebook-reader::-webkit-scrollbar { display: none; }
 
-.phone--bubble .reading-line:nth-child(3n)::before {
-  transform: translate(-45.7%, -51.5%) scaleX(-1);
-}
-
-.phone--bubble .reading-line p,
-.phone--bubble .reading-line .counter {
-  position: relative;
-  z-index: 1;
-}
-
-.phone--bubble .reading-line p {
-  width: 49%;
-  max-width: none;
-  overflow-wrap: anywhere;
-  text-wrap: balance;
-  transition: width .56s cubic-bezier(.4, 0, .2, 1), font-size .48s cubic-bezier(.4, 0, .2, 1);
-}
-
-.phone--bubble .reading-line--fit-short { font-size: 10px; }
-.phone--bubble .reading-line--fit-medium { font-size: 8.5px; }
-.phone--bubble .reading-line--fit-tight { font-size: 7px; line-height: 1.5; }
-
-.phone--bubble .reading-line--active {
-  width: 100%;
-  max-width: none;
-  height: 242px;
-  min-height: 242px;
-  margin: 0 auto;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.phone--bubble .reading-line--active p {
-  width: 72%;
-  min-width: 0;
+.ebook-content {
+  color: #242424;
   font-family: 'Bookk Myungjo', serif;
   font-size: 17px;
-  line-height: 1.5;
-  letter-spacing: -.045em;
+  font-weight: 400;
+  line-height: 2.05;
+  letter-spacing: -.035em;
+  word-break: keep-all;
+  user-select: text;
 }
 
-.phone--bubble .reading-line--active.reading-line--fit-medium p { font-size: 14px; }
-.phone--bubble .reading-line--active.reading-line--fit-tight p { font-size: 11px; line-height: 1.55; }
-
-.phone--bubble .reading-line--active::before,
-.phone--bubble .reading-line--active:nth-child(even)::before,
-.phone--bubble .reading-line--active:nth-child(3n)::before {
-  width: 108%;
-  transform: translate(-54.3%, -51.5%);
+.ebook-header {
+  margin: 16px 0 48px;
+  text-align: center;
 }
 
-.phone--bubble .counter {
-  display: none;
+.ebook-header span {
+  color: #777;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .04em;
+}
+
+.ebook-header h1 {
+  margin: 8px 0 0;
+  color: #111;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -.06em;
+}
+
+.ebook-content > p {
+  margin: 0 0 1.35em;
+  text-align: justify;
 }
 
 .bottom-tabbar {
@@ -392,12 +326,6 @@ body { font-family: 'Pretendard', sans-serif; }
 @media (max-width: 520px) {
   .prototype-stage { min-height: 100svh; padding: 6px; }
   .desktop-note { display: none; }
-  .phone--bubble .reading-line--fit-short { font-size: 10px; }
-  .phone--bubble .reading-line--fit-medium { font-size: 8.5px; }
-  .phone--bubble .reading-line--fit-tight { font-size: 7px; }
-  .phone--bubble .reading-line--active.reading-line--fit-short p { font-size: 17px; }
-  .phone--bubble .reading-line--active.reading-line--fit-medium p { font-size: 14px; }
-  .phone--bubble .reading-line--active.reading-line--fit-tight p { font-size: 11px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
