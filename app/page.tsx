@@ -306,6 +306,24 @@ export default function Home() {
                       ref={(node) => { lineRefs.current[index] = node; }}
                       className={`reading-line ${isActive ? 'reading-line--active' : ''}`}
                       aria-current={isActive ? 'step' : undefined}
+                      onPointerDown={(event) => {
+                        // 데스크톱 클릭은 바깥 제스처 캡처보다 먼저 문장 선택으로 처리한다.
+                        if (event.pointerType === 'touch') return;
+                        event.stopPropagation();
+                        if (Date.now() >= suppressTapUntil.current) jumpTo(index);
+                      }}
+                      onTouchEnd={(event) => {
+                        const started = touchGesture.current;
+                        if (!started || event.changedTouches.length === 0) return;
+
+                        const touch = event.changedTouches[0];
+                        const moved = Math.max(
+                          Math.abs(touch.clientX - started.x),
+                          Math.abs(touch.clientY - started.y),
+                        ) > 10;
+
+                        if (!moved && Date.now() >= suppressTapUntil.current) jumpTo(index);
+                      }}
                       onClick={() => {
                         if (Date.now() < suppressTapUntil.current) return;
                         jumpTo(index);
