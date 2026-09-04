@@ -225,12 +225,13 @@ body { font-family: 'Pretendard', sans-serif; }
 
 .ebook-content {
   color: #242424;
-  font-family: 'Bookk Myungjo', serif;
+  font-family: 'Bookk Gothic', sans-serif;
   font-size: 17px;
-  font-weight: 400;
-  line-height: 2.05;
-  letter-spacing: -.035em;
+  font-weight: 700;
+  line-height: 1.95;
+  letter-spacing: -.025em;
   word-break: keep-all;
+  text-align: right;
   user-select: text;
 }
 
@@ -258,7 +259,7 @@ body { font-family: 'Pretendard', sans-serif; }
 
 .ebook-content > p {
   margin: 0 0 1.35em;
-  text-align: justify;
+  text-align: right;
 }
 
 .bottom-tabbar {
