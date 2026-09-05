@@ -1,7 +1,17 @@
 'use client';
 
-import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, Bookmark, BookOpen, Check, House, Menu, Search, X } from 'lucide-react';
+import {
+  type CSSProperties,
+  type HTMLAttributes,
+  type ReactNode,
+  type Ref,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { ArrowLeft, ArrowRight, Bookmark, BookOpen, Check, Clock3, House, Menu, Search, X } from 'lucide-react';
 import { BOOK_SENTENCES, TEASER_SENTENCES } from './book-data';
 
 type ReadingLine = {
@@ -40,20 +50,71 @@ type FeedBook = {
   quote: string;
   color: string;
   foreground: string;
+  description: string;
 };
 
 const FEED_BOOKS: FeedBook[] = [
-  { title: '이방인', author: '알베르 카뮈', category: '고전 소설', quote: '오늘 엄마가 죽었다.\n아니, 어쩌면 어제, 모르겠다.', color: '#e6fb63', foreground: '#161616' },
-  { title: '월든', author: '헨리 데이비드 소로', category: '에세이', quote: '나는 삶을\n제대로 살아보고 싶었다.', color: '#c8e2e7', foreground: '#183438' },
-  { title: '아몬드', author: '손원평', category: '한국 소설', quote: '내 머릿속에는\n편도체가 작았다.', color: '#ffd3bc', foreground: '#783f2d' },
-  { title: '채식주의자', author: '한강', category: '한국 소설', quote: '나는 이제\n고기를 먹지 않아요.', color: '#d2e8c5', foreground: '#31542f' },
+  { title: '이방인', author: '알베르 카뮈', category: '고전 소설', quote: '오늘 엄마가 죽었다.\n아니, 어쩌면 어제, 모르겠다.', color: '#e6fb63', foreground: '#161616', description: '세상의 규칙과 감정에서 비껴난 한 남자. 무심한 문장 사이로 삶의 부조리를 마주하게 되는 소설.' },
+  { title: '월든', author: '헨리 데이비드 소로', category: '에세이', quote: '나는 삶을\n제대로 살아보고 싶었다.', color: '#c8e2e7', foreground: '#183438', description: '숲과 호수 곁에서 단순하게 살아보며, 정말 필요한 삶이 무엇인지 되묻는 고요한 기록.' },
+  { title: '아몬드', author: '손원평', category: '한국 소설', quote: '내 머릿속에는\n편도체가 작았다.', color: '#ffd3bc', foreground: '#783f2d', description: '감정을 잘 느끼지 못하는 소년이 낯선 관계를 통과하며 조금씩 세상을 배워가는 이야기.' },
+  { title: '채식주의자', author: '한강', category: '한국 소설', quote: '나는 이제\n고기를 먹지 않아요.', color: '#d2e8c5', foreground: '#31542f', description: '한 사람의 조용한 거부가 평범했던 일상을 흔들며 만들어내는 낯설고 강렬한 균열.' },
 ];
 
 export default function Home() {
   const [isReading, setIsReading] = useState(false);
+  const [selectedBook, setSelectedBook] = useState<FeedBook | null>(null);
 
-  if (isReading) return <Reader onExit={() => setIsReading(false)} />;
-  return <DiscoverFeed onStartReading={() => setIsReading(true)} />;
+  if (isReading) return <Reader onExit={() => { setIsReading(false); setSelectedBook(null); }} />;
+  if (selectedBook) {
+    return <BookEntry book={selectedBook} onBack={() => setSelectedBook(null)} onStartReading={() => setIsReading(true)} />;
+  }
+  return <DiscoverFeed onSelectBook={setSelectedBook} />;
+}
+
+type PhoneFrameProps = Omit<HTMLAttributes<HTMLElement>, 'children' | 'className'> & {
+  children: ReactNode;
+  className?: string;
+  phoneRef?: Ref<HTMLElement>;
+  ariaLabel: string;
+  note: string;
+};
+
+function PhoneFrame({ children, className = '', phoneRef, ariaLabel, note, style, ...phoneProps }: PhoneFrameProps) {
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const fitPhone = () => {
+      const sideGap = window.innerWidth <= 520 ? 12 : 32;
+      const verticalGap = window.innerWidth <= 520 ? 12 : 78;
+      setScale(Math.min(
+        1,
+        Math.max(0.1, (window.innerWidth - sideGap) / 390),
+        Math.max(0.1, (window.innerHeight - verticalGap) / 844),
+      ));
+    };
+
+    fitPhone();
+    window.addEventListener('resize', fitPhone);
+    return () => window.removeEventListener('resize', fitPhone);
+  }, []);
+
+  return (
+    <main className="prototype-stage">
+      <div className="phone-viewport" style={{ width: 390 * scale, height: 844 * scale }}>
+        <section
+          {...phoneProps}
+          ref={phoneRef}
+          className={`phone ${className}`.trim()}
+          style={{ ...style, transform: `scale(${scale})` }}
+          aria-label={ariaLabel}
+        >
+          <span className="speaker" aria-hidden="true" />
+          <div className="phone-screen">{children}</div>
+        </section>
+      </div>
+      <p className="desktop-note" aria-hidden="true">{note}</p>
+    </main>
+  );
 }
 
 function Reader({ onExit }: { onExit: () => void }) {
@@ -85,7 +146,6 @@ function Reader({ onExit }: { onExit: () => void }) {
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
   const [saved, setSaved] = useState(false);
   const [hasReachedEnd, setHasReachedEnd] = useState(false);
-  const [phoneScale, setPhoneScale] = useState(1);
   const phoneRef = useRef<HTMLElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
   const ebookRef = useRef<HTMLDivElement>(null);
@@ -100,22 +160,6 @@ function Reader({ onExit }: { onExit: () => void }) {
   const gesture = useRef<GestureStart | null>(null);
   const touchGesture = useRef<GestureStart | null>(null);
   const suppressTapUntil = useRef(0);
-
-  useEffect(() => {
-    const fitPhone = () => {
-      const sideGap = window.innerWidth <= 520 ? 12 : 32;
-      const verticalGap = window.innerWidth <= 520 ? 12 : 78;
-      setPhoneScale(Math.min(
-        1,
-        Math.max(0.1, (window.innerWidth - sideGap) / 390),
-        Math.max(0.1, (window.innerHeight - verticalGap) / 844),
-      ));
-    };
-
-    fitPhone();
-    window.addEventListener('resize', fitPhone);
-    return () => window.removeEventListener('resize', fitPhone);
-  }, []);
 
   const selectMode = useCallback((nextMode: ReadingMode) => {
     hasPositionedRail.current = false;
@@ -261,13 +305,11 @@ function Reader({ onExit }: { onExit: () => void }) {
   };
 
   return (
-    <main className="prototype-stage">
-      <div className="phone-viewport" style={{ width: 390 * phoneScale, height: 844 * phoneScale }}>
-        <section
-          ref={phoneRef}
-          className={`phone phone--${mode} phone--display-${displayTypeface} phone--counter-${counterTypeface} phone--support-${supportTypeface} ${animationsEnabled ? '' : 'phone--no-motion'}`}
-          style={{ transform: `scale(${phoneScale})` }}
-          aria-label={`북북 ${mode === 'plain' ? '일반' : '전자책'} 읽기 화면`}
+    <PhoneFrame
+          phoneRef={phoneRef}
+          className={`phone--${mode} phone--display-${displayTypeface} phone--counter-${counterTypeface} phone--support-${supportTypeface} ${animationsEnabled ? '' : 'phone--no-motion'}`}
+          ariaLabel={`북북 ${mode === 'plain' ? '일반' : '전자책'} 읽기 화면`}
+          note="세로로 문장 이동 · 가로로 일반/전자책 전환"
           tabIndex={0}
           onPointerDown={(event) => {
             if (event.pointerType === 'touch') return;
@@ -317,8 +359,6 @@ function Reader({ onExit }: { onExit: () => void }) {
             touchGesture.current = null;
           }}
         >
-          <span className="speaker" aria-hidden="true" />
-          <div className="phone-screen">
             <div className="type-menu">
               <button
                 type="button"
@@ -480,18 +520,64 @@ function Reader({ onExit }: { onExit: () => void }) {
                 <span>저장</span>
               </button>
             </nav>
-          </div>
-        </section>
-      </div>
-      <p className="desktop-note" aria-hidden="true">세로로 문장 이동 · 가로로 일반/전자책 전환</p>
-    </main>
+    </PhoneFrame>
   );
 }
 
-function DiscoverFeed({ onStartReading }: { onStartReading: () => void }) {
+function BookEntry({
+  book,
+  onBack,
+  onStartReading,
+}: {
+  book: FeedBook;
+  onBack: () => void;
+  onStartReading: () => void;
+}) {
+  const [saved, setSaved] = useState(false);
+
   return (
-    <main className="discover-stage">
-      <section className="discover-phone" aria-label="스북 책 탐색 화면">
+    <PhoneFrame className="phone--entry" ariaLabel={`${book.title} 책 소개`} note="책의 분위기를 보고 3분 미리보기를 시작해봐">
+      <div
+        className="book-entry"
+        style={{ '--card-color': book.color, '--card-foreground': book.foreground } as CSSProperties}
+      >
+        <header className="book-entry__header">
+          <button type="button" onClick={onBack} aria-label="탐색으로 돌아가기"><ArrowLeft aria-hidden="true" /></button>
+          <span>{book.category}</span>
+          <button type="button" onClick={() => setSaved((current) => !current)} aria-label="책 저장" aria-pressed={saved}>
+            <Bookmark aria-hidden="true" fill={saved ? 'currentColor' : 'none'} />
+          </button>
+        </header>
+        <section className="book-entry__hero">
+          <div className="book-entry__cover">
+            <span>{book.author}</span>
+            <strong>{book.title}</strong>
+          </div>
+          <p className="book-entry__quote">{book.quote}</p>
+        </section>
+        <section className="book-entry__sheet">
+          <div className="book-entry__title">
+            <div><h1>{book.title}</h1><p>{book.author}</p></div>
+            <span><Clock3 aria-hidden="true" /> 약 3분</span>
+          </div>
+          <p className="book-entry__description">{book.description}</p>
+          <button type="button" className="book-entry__start" onClick={onStartReading}>
+            3분 미리보기 시작 <ArrowRight aria-hidden="true" />
+          </button>
+          <small>스크롤하며 이 책의 분위기를 먼저 만나봐</small>
+        </section>
+      </div>
+    </PhoneFrame>
+  );
+}
+
+function DiscoverFeed({ onSelectBook }: { onSelectBook: (book: FeedBook) => void }) {
+  return (
+    <PhoneFrame
+      className="phone--discover"
+      ariaLabel="스북 책 탐색 화면"
+      note="책의 첫 문장을 따라 천천히 내려가봐"
+    >
         <header className="discover-header">
           <strong>스북</strong>
           <button type="button" aria-label="책 검색"><Search aria-hidden="true" /></button>
@@ -507,7 +593,7 @@ function DiscoverFeed({ onStartReading }: { onStartReading: () => void }) {
                 <span>{book.category}</span>
                 <span>{String(index + 1).padStart(2, '0')}</span>
               </div>
-              <button type="button" className="discover-card__quote" onClick={onStartReading}>
+              <button type="button" className="discover-card__quote" onClick={() => onSelectBook(book)}>
                 <p>{book.quote}</p>
                 <span aria-hidden="true">“</span>
               </button>
@@ -516,7 +602,7 @@ function DiscoverFeed({ onStartReading }: { onStartReading: () => void }) {
                   <h1>{book.title}</h1>
                   <p>{book.author}</p>
                 </div>
-                <button type="button" className="discover-card__open" onClick={onStartReading} aria-label={`${book.title} 읽기 시작`}>
+                <button type="button" className="discover-card__open" onClick={() => onSelectBook(book)} aria-label={`${book.title} 살펴보기`}>
                   <ArrowRight aria-hidden="true" />
                 </button>
               </footer>
@@ -524,9 +610,7 @@ function DiscoverFeed({ onStartReading }: { onStartReading: () => void }) {
           ))}
         </div>
         <p className="discover-hint">아래로 넘겨, 다음 문장을 만나봐</p>
-      </section>
-      <p className="desktop-note" aria-hidden="true">책의 첫 문장을 따라 천천히 내려가봐</p>
-    </main>
+    </PhoneFrame>
   );
 }
 

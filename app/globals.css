@@ -36,25 +36,6 @@ body { font-family: 'Pretendard', sans-serif; }
   padding: 24px 16px 54px;
 }
 
-.discover-stage {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  position: relative;
-  padding: 24px 16px 54px;
-}
-
-.discover-phone {
-  width: 390px;
-  height: 844px;
-  position: relative;
-  overflow: hidden;
-  border: 8px solid #0a0a0a;
-  border-radius: 48px;
-  background: #f5f4ef;
-  box-shadow: 0 28px 70px rgba(0, 0, 0, .20), 0 5px 16px rgba(0, 0, 0, .16);
-}
-
 .discover-header {
   position: absolute;
   z-index: 4;
@@ -71,8 +52,8 @@ body { font-family: 'Pretendard', sans-serif; }
 }
 
 .discover-header strong { font-size: 23px; letter-spacing: -.09em; }
-.discover-header button { width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .42); color: inherit; pointer-events: auto; }
-.discover-header svg { width: 17px; height: 17px; }
+.discover-header button { width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 34px; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .42); color: inherit; line-height: 0; pointer-events: auto; }
+.discover-header svg { width: 17px; height: 17px; display: block; }
 
 .discover-feed { height: 100%; overflow-y: auto; scroll-snap-type: y mandatory; scrollbar-width: none; }
 .discover-feed::-webkit-scrollbar { display: none; }
@@ -97,6 +78,28 @@ body { font-family: 'Pretendard', sans-serif; }
 .discover-card__open { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid currentColor; border-radius: 50%; background: transparent; color: inherit; }
 .discover-card__open svg { width: 19px; height: 19px; }
 .discover-hint { position: absolute; z-index: 4; bottom: 20px; left: 50%; margin: 0; transform: translateX(-50%); color: #fff; font-size: 10px; font-weight: 600; white-space: nowrap; mix-blend-mode: difference; }
+
+.phone--entry { touch-action: manipulation; user-select: none; }
+.book-entry { height: 100%; position: relative; overflow: hidden; color: var(--card-foreground); background: var(--card-color); }
+.book-entry__header { position: absolute; z-index: 3; top: 0; right: 0; left: 0; height: 82px; display: grid; grid-template-columns: 40px 1fr 40px; align-items: end; padding: 0 20px 8px; }
+.book-entry__header > span { padding-bottom: 9px; font-size: 11px; font-weight: 650; text-align: center; opacity: .68; }
+.book-entry__header button { width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .38); color: inherit; }
+.book-entry__header svg { width: 18px; height: 18px; }
+.book-entry__hero { height: 57%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 50px; }
+.book-entry__cover { width: 128px; height: 176px; display: flex; flex-direction: column; justify-content: space-between; padding: 17px 15px; background: var(--card-foreground); color: var(--card-color); box-shadow: 12px 16px 28px rgba(0, 0, 0, .2); transform: rotate(-2deg); }
+.book-entry__cover span { font-size: 8px; letter-spacing: .04em; opacity: .75; }
+.book-entry__cover strong { font-family: 'Bookk Myungjo', serif; font-size: 24px; line-height: 1; letter-spacing: -.08em; }
+.book-entry__quote { margin: 28px 0 0; white-space: pre-line; font-family: 'Bookk Myungjo', serif; font-size: 16px; font-weight: 700; line-height: 1.45; letter-spacing: -.045em; text-align: center; }
+.book-entry__sheet { height: 43%; padding: 28px 27px 24px; border-radius: 30px 30px 0 0; background: #fff; color: #171717; box-shadow: 0 -8px 30px rgba(0, 0, 0, .07); }
+.book-entry__title { display: flex; align-items: flex-start; justify-content: space-between; }
+.book-entry__title h1 { margin: 0 0 5px; font-size: 25px; line-height: 1; letter-spacing: -.08em; }
+.book-entry__title p { margin: 0; color: #777; font-size: 11px; }
+.book-entry__title > span { display: inline-flex; align-items: center; gap: 4px; padding: 6px 8px; border-radius: 12px; background: #f1f1ef; color: #555; font-size: 9px; font-weight: 650; }
+.book-entry__title svg { width: 12px; height: 12px; }
+.book-entry__description { min-height: 61px; margin: 24px 0 20px; color: #515151; font-size: 13px; line-height: 1.6; letter-spacing: -.025em; word-break: keep-all; }
+.book-entry__start { width: 100%; height: 50px; display: flex; align-items: center; justify-content: center; gap: 7px; border: 0; border-radius: 16px; background: #171717; color: #fff; font-size: 13px; font-weight: 700; }
+.book-entry__start svg { width: 16px; height: 16px; }
+.book-entry__sheet small { display: block; margin-top: 10px; color: #929292; font-size: 9px; text-align: center; }
 
 .phone {
   width: 390px;
@@ -127,6 +130,13 @@ body { font-family: 'Pretendard', sans-serif; }
 .phone--support-bookk { --support-font: 'Bookk Gothic', sans-serif; --support-weight: 700; }
 .phone--support-suit { --support-font: 'SUIT Variable', sans-serif; --support-weight: 480; }
 .phone--support-pretendard { --support-font: 'Pretendard', sans-serif; --support-weight: 400; }
+
+.phone--discover {
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.phone--discover .phone-screen { background: #f5f4ef; }
 
 .phone--ebook {
   touch-action: pan-y;
@@ -563,8 +573,6 @@ body { font-family: 'Pretendard', sans-serif; }
 
 @media (max-width: 520px) {
   .prototype-stage { min-height: 100svh; padding: 6px; }
-  .discover-stage { min-height: 100svh; padding: 6px; }
-  .discover-phone { width: 100%; height: calc(100svh - 12px); border-width: 0; border-radius: 28px; }
   .desktop-note { display: none; }
 }
 
