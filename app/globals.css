@@ -81,15 +81,29 @@ body { font-family: 'Pretendard', sans-serif; }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.discover-feed { height: 100%; overflow-y: auto; scroll-snap-type: y mandatory; scrollbar-width: none; }
+.discover-feed {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overflow-anchor: none;
+  overscroll-behavior-y: none;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
 .discover-feed::-webkit-scrollbar { display: none; }
 
 .discover-card {
+  height: 100%;
   min-height: 100%;
+  flex: 0 0 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   padding: 103px 28px 72px;
   scroll-snap-align: start;
+  scroll-snap-stop: always;
   color: var(--card-foreground);
   background: var(--card-color);
 }
@@ -115,9 +129,9 @@ body { font-family: 'Pretendard', sans-serif; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 38px;
+  padding: 38px 38px 280px;
   border: 0;
-  background: rgba(0, 0, 0, .7);
+  background: rgba(0, 0, 0, .84);
   color: #fff;
   text-align: center;
   cursor: pointer;
@@ -452,8 +466,9 @@ body { font-family: 'Pretendard', sans-serif; }
   letter-spacing: -.065em;
   text-align: center;
   max-width: 100%;
-  overflow-wrap: anywhere;
-  text-wrap: pretty;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  text-wrap: balance;
 }
 
 .reading-line--compact { --active-font-size: 22px; --active-line-height: 1.42; }

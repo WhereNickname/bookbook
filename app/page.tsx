@@ -36,6 +36,10 @@ function startsSupportParagraph(line: ReadingLine) {
   return line.number === 1 || (line.number - 1) % 3 === 0;
 }
 
+function splitSentenceBeats(sentences: readonly string[]) {
+  return sentences.flatMap((sentence) => sentence.split(/(?<=\.)\s+/).filter(Boolean));
+}
+
 type Genre = '전체' | '고전문학' | '로맨스' | '한국' | '해외' | '영어원문' | '자기개발';
 
 type FeedBook = {
@@ -138,23 +142,25 @@ function PhoneFrame({ children, className = '', phoneRef, ariaLabel, note, style
 }
 
 function Reader({ animationsEnabled, onAnimationsChange, onExit }: { animationsEnabled: boolean; onAnimationsChange: (enabled: boolean) => void; onExit: () => void }) {
+  const teaserSentences = useMemo(() => splitSentenceBeats(TEASER_SENTENCES), []);
+  const bookSentences = useMemo(() => splitSentenceBeats(BOOK_SENTENCES), []);
   const lines = useMemo<ReadingLine[]>(
     () => {
       return [
-        ...TEASER_SENTENCES.map((text, index) => ({ id: `teaser-${index}`, text, section: 'teaser' as const, number: index + 1 })),
-        ...BOOK_SENTENCES.map((text, index) => ({ id: `book-${index}`, text, section: 'book' as const, number: index + 1 })),
+        ...teaserSentences.map((text, index) => ({ id: `teaser-${index}`, text, section: 'teaser' as const, number: index + 1 })),
+        ...bookSentences.map((text, index) => ({ id: `book-${index}`, text, section: 'book' as const, number: index + 1 })),
       ];
     },
-    [],
+    [bookSentences, teaserSentences],
   );
 
-  const bookBeatCount = lines.length - TEASER_SENTENCES.length;
+  const bookBeatCount = bookSentences.length;
   const ebookParagraphs = useMemo(
     () => Array.from(
-      { length: Math.ceil(BOOK_SENTENCES.length / 5) },
-      (_, index) => BOOK_SENTENCES.slice(index * 5, index * 5 + 5).join(' '),
+      { length: Math.ceil(bookSentences.length / 5) },
+      (_, index) => bookSentences.slice(index * 5, index * 5 + 5).join(' '),
     ),
-    [],
+    [bookSentences],
   );
 
   const [activeIndex, setActiveIndex] = useState(0);
