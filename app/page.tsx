@@ -63,12 +63,13 @@ const FEED_BOOKS: FeedBook[] = [
 export default function Home() {
   const [isReading, setIsReading] = useState(false);
   const [selectedBook, setSelectedBook] = useState<FeedBook | null>(null);
+  const [animationsEnabled, setAnimationsEnabled] = useState(true);
 
-  if (isReading) return <Reader onExit={() => { setIsReading(false); setSelectedBook(null); }} />;
+  if (isReading) return <Reader animationsEnabled={animationsEnabled} onAnimationsChange={setAnimationsEnabled} onExit={() => { setIsReading(false); setSelectedBook(null); }} />;
   if (selectedBook) {
-    return <BookEntry book={selectedBook} onBack={() => setSelectedBook(null)} onStartReading={() => setIsReading(true)} />;
+    return <BookEntry book={selectedBook} animationsEnabled={animationsEnabled} onBack={() => setSelectedBook(null)} onStartReading={() => setIsReading(true)} />;
   }
-  return <DiscoverFeed onSelectBook={setSelectedBook} />;
+  return <DiscoverFeed animationsEnabled={animationsEnabled} onSelectBook={setSelectedBook} />;
 }
 
 type PhoneFrameProps = Omit<HTMLAttributes<HTMLElement>, 'children' | 'className'> & {
@@ -117,7 +118,7 @@ function PhoneFrame({ children, className = '', phoneRef, ariaLabel, note, style
   );
 }
 
-function Reader({ onExit }: { onExit: () => void }) {
+function Reader({ animationsEnabled, onAnimationsChange, onExit }: { animationsEnabled: boolean; onAnimationsChange: (enabled: boolean) => void; onExit: () => void }) {
   const lines = useMemo<ReadingLine[]>(
     () => {
       return [
@@ -143,7 +144,6 @@ function Reader({ onExit }: { onExit: () => void }) {
   const [counterTypeface, setCounterTypeface] = useState<Typeface>('bookk');
   const [supportTypeface, setSupportTypeface] = useState<Typeface>('pretendard');
   const [isTypographyMenuOpen, setIsTypographyMenuOpen] = useState(false);
-  const [animationsEnabled, setAnimationsEnabled] = useState(true);
   const [saved, setSaved] = useState(false);
   const [hasReachedEnd, setHasReachedEnd] = useState(false);
   const phoneRef = useRef<HTMLElement>(null);
@@ -307,7 +307,7 @@ function Reader({ onExit }: { onExit: () => void }) {
   return (
     <PhoneFrame
           phoneRef={phoneRef}
-          className={`phone--${mode} phone--display-${displayTypeface} phone--counter-${counterTypeface} phone--support-${supportTypeface} ${animationsEnabled ? '' : 'phone--no-motion'}`}
+          className={`phone--${mode} phone--display-${displayTypeface} phone--counter-${counterTypeface} phone--support-${supportTypeface} ${animationsEnabled ? 'phone--screen-enter' : 'phone--no-motion'}`}
           ariaLabel={`북북 ${mode === 'plain' ? '일반' : '전자책'} 읽기 화면`}
           note="세로로 문장 이동 · 가로로 일반/전자책 전환"
           tabIndex={0}
@@ -389,7 +389,7 @@ function Reader({ onExit }: { onExit: () => void }) {
                       className={animationsEnabled ? 'motion-setting__switch--active' : ''}
                       onPointerDown={(event) => event.stopPropagation()}
                       onTouchStart={(event) => event.stopPropagation()}
-                      onClick={() => setAnimationsEnabled((current) => !current)}
+                      onClick={() => onAnimationsChange(!animationsEnabled)}
                     >
                       <span />
                     </button>
@@ -526,17 +526,19 @@ function Reader({ onExit }: { onExit: () => void }) {
 
 function BookEntry({
   book,
+  animationsEnabled,
   onBack,
   onStartReading,
 }: {
   book: FeedBook;
+  animationsEnabled: boolean;
   onBack: () => void;
   onStartReading: () => void;
 }) {
   const [saved, setSaved] = useState(false);
 
   return (
-    <PhoneFrame className="phone--entry" ariaLabel={`${book.title} 책 소개`} note="책의 분위기를 보고 3분 미리보기를 시작해봐">
+    <PhoneFrame className={`phone--entry ${animationsEnabled ? 'phone--screen-enter' : 'phone--no-motion'}`} ariaLabel={`${book.title} 책 소개`} note="책의 분위기를 보고 3분 미리보기를 시작해봐">
       <div
         className="book-entry"
         style={{ '--card-color': book.color, '--card-foreground': book.foreground } as CSSProperties}
@@ -571,10 +573,10 @@ function BookEntry({
   );
 }
 
-function DiscoverFeed({ onSelectBook }: { onSelectBook: (book: FeedBook) => void }) {
+function DiscoverFeed({ animationsEnabled, onSelectBook }: { animationsEnabled: boolean; onSelectBook: (book: FeedBook) => void }) {
   return (
     <PhoneFrame
-      className="phone--discover"
+      className={`phone--discover ${animationsEnabled ? 'phone--screen-enter' : 'phone--no-motion'}`}
       ariaLabel="스북 책 탐색 화면"
       note="책의 첫 문장을 따라 천천히 내려가봐"
     >

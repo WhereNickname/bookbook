@@ -324,6 +324,21 @@ body { font-family: 'Pretendard', sans-serif; }
   transition: none !important;
 }
 
+.phone--screen-enter .phone-screen {
+  animation: phone-screen-enter .38s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+@keyframes phone-screen-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .mode-tabs__divider {
   width: 1px;
   height: 13px;
