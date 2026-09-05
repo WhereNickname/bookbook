@@ -11,7 +11,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { ArrowLeft, ArrowRight, Bookmark, BookOpen, Check, Clock3, House, Menu, Search, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bookmark, Clock3, Menu, X } from 'lucide-react';
 import { BOOK_SENTENCES, TEASER_SENTENCES } from './book-data';
 
 type ReadingLine = {
@@ -23,7 +23,6 @@ type ReadingLine = {
 
 type GestureStart = { x: number; y: number; moved: boolean };
 type ReadingMode = 'plain' | 'ebook';
-type Typeface = 'bookk' | 'suit' | 'pretendard';
 
 function getActiveLineSize(text: string) {
   const characterCount = text.replace(/\s/g, '').length;
@@ -37,16 +36,14 @@ function startsSupportParagraph(line: ReadingLine) {
   return line.number === 1 || (line.number - 1) % 3 === 0;
 }
 
-const TYPEFACE_OPTIONS: Array<{ id: Typeface; label: string }> = [
-  { id: 'bookk', label: '부크크' },
-  { id: 'suit', label: 'SUIT' },
-  { id: 'pretendard', label: '프리텐다드' },
-];
+type Genre = '전체' | '고전문학' | '로맨스' | '한국' | '해외' | '영어원문' | '자기개발';
 
 type FeedBook = {
   title: string;
   author: string;
   category: string;
+  genres: Genre[];
+  coverStyle: 'stranger' | 'walden' | 'almond' | 'vegetarian';
   quote: string;
   color: string;
   foreground: string;
@@ -54,18 +51,20 @@ type FeedBook = {
 };
 
 const FEED_BOOKS: FeedBook[] = [
-  { title: '이방인', author: '알베르 카뮈', category: '고전 소설', quote: '오늘 엄마가 죽었다.\n아니, 어쩌면 어제, 모르겠다.', color: '#e6fb63', foreground: '#161616', description: '세상의 규칙과 감정에서 비껴난 한 남자. 무심한 문장 사이로 삶의 부조리를 마주하게 되는 소설.' },
-  { title: '월든', author: '헨리 데이비드 소로', category: '에세이', quote: '나는 삶을\n제대로 살아보고 싶었다.', color: '#c8e2e7', foreground: '#183438', description: '숲과 호수 곁에서 단순하게 살아보며, 정말 필요한 삶이 무엇인지 되묻는 고요한 기록.' },
-  { title: '아몬드', author: '손원평', category: '한국 소설', quote: '내 머릿속에는\n편도체가 작았다.', color: '#ffd3bc', foreground: '#783f2d', description: '감정을 잘 느끼지 못하는 소년이 낯선 관계를 통과하며 조금씩 세상을 배워가는 이야기.' },
-  { title: '채식주의자', author: '한강', category: '한국 소설', quote: '나는 이제\n고기를 먹지 않아요.', color: '#d2e8c5', foreground: '#31542f', description: '한 사람의 조용한 거부가 평범했던 일상을 흔들며 만들어내는 낯설고 강렬한 균열.' },
+  { title: '이방인', author: '알베르 카뮈', category: '고전 소설', genres: ['고전문학', '해외'], coverStyle: 'stranger', quote: '오늘 엄마가 죽었다.\n아니, 어쩌면 어제. 모르겠다.', color: '#e6fb63', foreground: '#161616', description: '세상의 규칙과 감정에서 비껴난 한 남자. 무심한 문장 사이로 삶의 부조리를 마주하게 되는 소설.' },
+  { title: '월든', author: '헨리 데이비드 소로', category: '에세이', genres: ['고전문학', '해외', '자기개발'], coverStyle: 'walden', quote: '나는 삶을\n제대로 살아보고 싶었다.', color: '#c8e2e7', foreground: '#183438', description: '숲과 호수 곁에서 단순하게 살아보며, 정말 필요한 삶이 무엇인지 되묻는 고요한 기록.' },
+  { title: '아몬드', author: '손원평', category: '한국 소설', genres: ['한국'], coverStyle: 'almond', quote: '내 머릿속에는\n편도체가 작았다.', color: '#ffd3bc', foreground: '#783f2d', description: '감정을 잘 느끼지 못하는 소년이 낯선 관계를 통과하며 조금씩 세상을 배워가는 이야기.' },
+  { title: '채식주의자', author: '한강', category: '한국 소설', genres: ['한국'], coverStyle: 'vegetarian', quote: '나는 이제\n고기를 먹지 않아요.', color: '#d2e8c5', foreground: '#31542f', description: '한 사람의 조용한 거부가 평범했던 일상을 흔들며 만들어내는 낯설고 강렬한 균열.' },
 ];
+
+const GENRES: Genre[] = ['전체', '고전문학', '로맨스', '한국', '해외', '영어원문', '자기개발'];
 
 export default function Home() {
   const [isReading, setIsReading] = useState(false);
   const [selectedBook, setSelectedBook] = useState<FeedBook | null>(null);
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
 
-  if (isReading) return <Reader animationsEnabled={animationsEnabled} onAnimationsChange={setAnimationsEnabled} onExit={() => { setIsReading(false); setSelectedBook(null); }} />;
+  if (isReading) return <Reader animationsEnabled={animationsEnabled} onAnimationsChange={setAnimationsEnabled} onBack={() => setIsReading(false)} />;
   if (selectedBook) {
     return <BookEntry book={selectedBook} animationsEnabled={animationsEnabled} onBack={() => setSelectedBook(null)} onStartReading={() => setIsReading(true)} />;
   }
@@ -118,7 +117,7 @@ function PhoneFrame({ children, className = '', phoneRef, ariaLabel, note, style
   );
 }
 
-function Reader({ animationsEnabled, onAnimationsChange, onExit }: { animationsEnabled: boolean; onAnimationsChange: (enabled: boolean) => void; onExit: () => void }) {
+function Reader({ animationsEnabled, onAnimationsChange, onBack }: { animationsEnabled: boolean; onAnimationsChange: (enabled: boolean) => void; onBack: () => void }) {
   const lines = useMemo<ReadingLine[]>(
     () => {
       return [
@@ -140,10 +139,7 @@ function Reader({ animationsEnabled, onAnimationsChange, onExit }: { animationsE
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [mode, setMode] = useState<ReadingMode>('plain');
-  const [displayTypeface, setDisplayTypeface] = useState<Typeface>('bookk');
-  const [counterTypeface, setCounterTypeface] = useState<Typeface>('bookk');
-  const [supportTypeface, setSupportTypeface] = useState<Typeface>('pretendard');
-  const [isTypographyMenuOpen, setIsTypographyMenuOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const [hasReachedEnd, setHasReachedEnd] = useState(false);
   const phoneRef = useRef<HTMLElement>(null);
@@ -307,13 +303,13 @@ function Reader({ animationsEnabled, onAnimationsChange, onExit }: { animationsE
   return (
     <PhoneFrame
           phoneRef={phoneRef}
-          className={`phone--${mode} phone--display-${displayTypeface} phone--counter-${counterTypeface} phone--support-${supportTypeface} ${animationsEnabled ? 'phone--screen-enter' : 'phone--no-motion'}`}
+          className={`phone--${mode} ${animationsEnabled ? 'phone--screen-enter' : 'phone--no-motion'}`}
           ariaLabel={`북북 ${mode === 'plain' ? '일반' : '전자책'} 읽기 화면`}
           note="세로로 문장 이동 · 가로로 일반/전자책 전환"
           tabIndex={0}
           onPointerDown={(event) => {
             if (event.pointerType === 'touch') return;
-            if ((event.target as HTMLElement).closest('.mode-tabs, .type-menu, .bottom-tabbar, .continue-cta')) return;
+            if ((event.target as HTMLElement).closest('.mode-tabs, .reader-controls, .continue-cta')) return;
             gesture.current = { x: event.clientX, y: event.clientY, moved: false };
             event.currentTarget.setPointerCapture(event.pointerId);
           }}
@@ -338,7 +334,7 @@ function Reader({ animationsEnabled, onAnimationsChange, onExit }: { animationsE
           }}
           onTouchStart={(event) => {
             if (event.touches.length !== 1) return;
-            if ((event.target as HTMLElement).closest('.mode-tabs, .type-menu, .bottom-tabbar, .continue-cta')) return;
+            if ((event.target as HTMLElement).closest('.mode-tabs, .reader-controls, .continue-cta')) return;
             const touch = event.touches[0];
             touchGesture.current = { x: touch.clientX, y: touch.clientY, moved: false };
           }}
@@ -359,43 +355,49 @@ function Reader({ animationsEnabled, onAnimationsChange, onExit }: { animationsE
             touchGesture.current = null;
           }}
         >
-            <div className="type-menu">
-              <button
-                type="button"
-                className="type-menu__toggle"
-                aria-label="문체 선택 열기"
-                aria-expanded={isTypographyMenuOpen}
-                onPointerDown={(event) => event.stopPropagation()}
-                onTouchStart={(event) => event.stopPropagation()}
-                onClick={() => setIsTypographyMenuOpen((current) => !current)}
-              >
-                {isTypographyMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+            <div className="reader-controls" aria-label="읽기 메뉴">
+              <button type="button" className="reader-control-button" onClick={onBack} aria-label="책 소개로 돌아가기">
+                <ArrowLeft aria-hidden="true" />
               </button>
-              {isTypographyMenuOpen && (
-                <div className="type-menu__panel" role="menu" aria-label="문체 선택">
-                  <p>문체</p>
-                  <TypefacePicker label="중앙 문장" value={displayTypeface} onChange={setDisplayTypeface} />
-                  <TypefacePicker label="프롤로그 · 숫자" value={counterTypeface} onChange={setCounterTypeface} />
-                  <TypefacePicker label="작은 문장" value={supportTypeface} onChange={setSupportTypeface} />
-                  <div className="motion-setting">
-                    <div>
-                      <strong>GUI 애니메이션</strong>
-                      <span>{animationsEnabled ? '켜짐' : '꺼짐'}</span>
+              <div className="type-menu">
+                <button
+                  type="button"
+                  className="reader-control-button type-menu__toggle"
+                  aria-label="화면 설정 열기"
+                  aria-expanded={isSettingsOpen}
+                  onClick={() => setIsSettingsOpen((current) => !current)}
+                >
+                  {isSettingsOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+                </button>
+                {isSettingsOpen && (
+                  <div className="type-menu__panel" role="menu" aria-label="화면 설정">
+                    <div className="motion-setting">
+                      <div>
+                        <strong>GUI 애니메이션</strong>
+                        <span>{animationsEnabled ? '켜짐' : '꺼짐'}</span>
+                      </div>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={animationsEnabled}
+                        className={animationsEnabled ? 'motion-setting__switch--active' : ''}
+                        onClick={() => onAnimationsChange(!animationsEnabled)}
+                      >
+                        <span />
+                      </button>
                     </div>
                     <button
                       type="button"
-                      role="switch"
-                      aria-checked={animationsEnabled}
-                      className={animationsEnabled ? 'motion-setting__switch--active' : ''}
-                      onPointerDown={(event) => event.stopPropagation()}
-                      onTouchStart={(event) => event.stopPropagation()}
-                      onClick={() => onAnimationsChange(!animationsEnabled)}
+                      className={`menu-save ${saved ? 'menu-save--active' : ''}`}
+                      onClick={() => setSaved((current) => !current)}
+                      aria-pressed={saved}
                     >
-                      <span />
+                      <Bookmark aria-hidden="true" fill={saved ? 'currentColor' : 'none'} />
+                      <span>{saved ? '저장됨' : '책 저장'}</span>
                     </button>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
             <div className="mode-tabs" role="tablist" aria-label="읽기 형식">
               <div className="mode-tabs__list">
@@ -488,38 +490,6 @@ function Reader({ animationsEnabled, onAnimationsChange, onExit }: { animationsE
             {mode === 'plain' && hasReachedEnd && (
               <button type="button" className="continue-cta">이어서 읽기</button>
             )}
-            <nav className="bottom-tabbar" aria-label="하단 메뉴">
-              <button
-                type="button"
-                className="bottom-tabbar__item"
-                onPointerDown={(event) => event.stopPropagation()}
-                onTouchStart={(event) => event.stopPropagation()}
-                onClick={() => {
-                  activeIndexRef.current = 0;
-                  setActiveIndex(0);
-                  setHasReachedEnd(false);
-                  ebookRef.current?.scrollTo({ top: 0 });
-                  onExit();
-                }}
-                aria-label="책 탐색으로 돌아가기"
-              >
-                <House aria-hidden="true" />
-                <span>탐색</span>
-              </button>
-              <button type="button" className="bottom-tabbar__item bottom-tabbar__item--active" aria-current="page">
-                <BookOpen aria-hidden="true" />
-                <span>읽기</span>
-              </button>
-              <button
-                type="button"
-                className={`bottom-tabbar__item ${saved ? 'bottom-tabbar__item--saved' : ''}`}
-                onClick={() => setSaved((current) => !current)}
-                aria-pressed={saved}
-              >
-                <Bookmark aria-hidden="true" fill={saved ? 'currentColor' : 'none'} />
-                <span>저장</span>
-              </button>
-            </nav>
     </PhoneFrame>
   );
 }
@@ -551,10 +521,7 @@ function BookEntry({
           </button>
         </header>
         <section className="book-entry__hero">
-          <div className="book-entry__cover">
-            <span>{book.author}</span>
-            <strong>{book.title}</strong>
-          </div>
+          <BookCoverArtwork book={book} />
           <p className="book-entry__quote">{book.quote}</p>
         </section>
         <section className="book-entry__sheet">
@@ -573,7 +540,42 @@ function BookEntry({
   );
 }
 
+function BookCoverArtwork({ book }: { book: FeedBook }) {
+  return (
+    <div className={`book-entry__cover cover--${book.coverStyle}`} aria-label={`${book.title} 표지`}>
+      <div className="cover-art" aria-hidden="true">
+        {book.coverStyle === 'stranger' && (
+          <><i className="stranger-sun" /><i className="stranger-horizon" /><span className="stranger-time">12:00<br />ALGER</span></>
+        )}
+        {book.coverStyle === 'walden' && (
+          <><i className="walden-ring walden-ring--1" /><i className="walden-ring walden-ring--2" /><i className="walden-ring walden-ring--3" /><span className="walden-mark">1845<br />WALDEN POND</span></>
+        )}
+        {book.coverStyle === 'almond' && (
+          <><i className="almond-core almond-core--left" /><i className="almond-core almond-core--right" /><span className="almond-signal">01 · 00 · 01<br />FEELING SIGNAL</span></>
+        )}
+        {book.coverStyle === 'vegetarian' && (
+          <><i className="plant-stem" /><i className="plant-leaf plant-leaf--1" /><i className="plant-leaf plant-leaf--2" /><i className="plant-leaf plant-leaf--3" /><span className="plant-index">ROOT / BODY<br />01—03</span></>
+        )}
+      </div>
+      <div className="cover-label"><span>{book.author}</span><strong>{book.title}</strong></div>
+    </div>
+  );
+}
+
 function DiscoverFeed({ animationsEnabled, onSelectBook }: { animationsEnabled: boolean; onSelectBook: (book: FeedBook) => void }) {
+  const [isGenreMenuOpen, setIsGenreMenuOpen] = useState(false);
+  const [selectedGenre, setSelectedGenre] = useState<Genre>('전체');
+  const feedRef = useRef<HTMLDivElement>(null);
+  const visibleBooks = selectedGenre === '전체'
+    ? FEED_BOOKS
+    : FEED_BOOKS.filter((book) => book.genres.includes(selectedGenre));
+
+  const selectGenre = (genre: Genre) => {
+    setSelectedGenre(genre);
+    setIsGenreMenuOpen(false);
+    window.requestAnimationFrame(() => feedRef.current?.scrollTo({ top: 0 }));
+  };
+
   return (
     <PhoneFrame
       className={`phone--discover ${animationsEnabled ? 'phone--screen-enter' : 'phone--no-motion'}`}
@@ -581,11 +583,37 @@ function DiscoverFeed({ animationsEnabled, onSelectBook }: { animationsEnabled: 
       note="책의 첫 문장을 따라 천천히 내려가봐"
     >
         <header className="discover-header">
-          <strong>스북</strong>
-          <button type="button" aria-label="책 검색"><Search aria-hidden="true" /></button>
+          <strong>스북 <small>{selectedGenre}</small></strong>
+          <button
+            type="button"
+            aria-label="장르 메뉴"
+            aria-expanded={isGenreMenuOpen}
+            onClick={() => setIsGenreMenuOpen((current) => !current)}
+          >
+            {isGenreMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+          </button>
         </header>
-        <div className="discover-feed">
-          {FEED_BOOKS.map((book, index) => (
+        {isGenreMenuOpen && (
+          <div className="genre-menu" role="menu" aria-label="책 장르 선택">
+            <p>어떤 책을 볼까?</p>
+            <div>
+              {GENRES.map((genre) => (
+                <button
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={selectedGenre === genre}
+                  className={selectedGenre === genre ? 'genre-menu__item--active' : ''}
+                  onClick={() => selectGenre(genre)}
+                  key={genre}
+                >
+                  {genre}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="discover-feed" ref={feedRef}>
+          {visibleBooks.map((book, index) => (
             <article
               key={book.title}
               className="discover-card"
@@ -610,40 +638,16 @@ function DiscoverFeed({ animationsEnabled, onSelectBook }: { animationsEnabled: 
               </footer>
             </article>
           ))}
+          {visibleBooks.length === 0 && (
+            <div className="discover-empty">
+              <span>{selectedGenre}</span>
+              <strong>아직 준비 중이야</strong>
+              <p>다른 장르에서 마음에 드는 문장을 찾아봐.</p>
+              <button type="button" onClick={() => selectGenre('전체')}>전체 책 보기</button>
+            </div>
+          )}
         </div>
-        <p className="discover-hint">아래로 넘겨, 다음 문장을 만나봐</p>
+        {visibleBooks.length > 1 && <p className="discover-hint">아래로 넘겨, 다음 문장을 만나봐</p>}
     </PhoneFrame>
-  );
-}
-
-function TypefacePicker({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: Typeface;
-  onChange: (typeface: Typeface) => void;
-}) {
-  return (
-    <section className="type-menu__section" aria-label={label}>
-      <strong>{label}</strong>
-      <div className="type-menu__choices" role="group" aria-label={`${label} 서체`}>
-        {TYPEFACE_OPTIONS.map((option) => (
-          <button
-            key={option.id}
-            type="button"
-            aria-pressed={value === option.id}
-            className={value === option.id ? 'type-menu__choice--active' : ''}
-            onPointerDown={(event) => event.stopPropagation()}
-            onTouchStart={(event) => event.stopPropagation()}
-            onClick={() => onChange(option.id)}
-          >
-            {option.label}
-            {value === option.id && <Check aria-hidden="true" />}
-          </button>
-        ))}
-      </div>
-    </section>
   );
 }
