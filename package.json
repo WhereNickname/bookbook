@@ -11,6 +11,7 @@
     "build:vercel": "vite build --config vite.vercel.config.ts",
     "start": "vite preview --config vite.vercel.config.ts",
     "lint": "oxlint",
+    "check:content": "node scripts/check-content.mjs",
     "format": "oxfmt"
   },
   "dependencies": {

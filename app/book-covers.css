@@ -1,0 +1,46 @@
+/*
+ * FILE ROLE: 확장 도서의 색상·상징 표지와 긴 서지 텍스트를 표시한다.
+ * OWNS: 표지 패턴, 제목 줄바꿈, 전자책 프롤로그 표현.
+ * USES: book-catalog의 CSS 색상 변수와 기존 표지 마크업.
+ * MUST NOT: 읽기 제스처, 스크롤 위치, 기존 표지별 디자인을 변경한다.
+ */
+.book-entry__cover[class*='cover-pattern--'] {
+  background: var(--cover-color);
+  color: var(--cover-ink);
+}
+.cover-pattern--grid .cover-art {
+  background: repeating-linear-gradient(90deg, transparent 0 22px, currentColor 23px, transparent 24px),
+    linear-gradient(0deg, transparent 68%, currentColor 68% 69%, transparent 69%);
+}
+.cover-pattern--orbit .cover-art::after {
+  top: 22px; left: 17px; width: 110px; height: 110px;
+  border: 1px solid currentColor; border-radius: 50%;
+  box-shadow: 0 0 0 12px color-mix(in srgb, var(--cover-ink) 14%, transparent);
+}
+.cover-pattern--wave .cover-art {
+  background: repeating-radial-gradient(ellipse at -30% 10%, transparent 0 17px,
+    color-mix(in srgb, var(--cover-ink) 30%, transparent) 18px 20px, transparent 21px 30px);
+}
+.cover-pattern--split .cover-art {
+  background: linear-gradient(135deg, transparent 45%, color-mix(in srgb, var(--cover-ink) 20%, transparent) 45% 55%, transparent 55%);
+}
+.book-entry__cover[class*='cover-pattern--'] .cover-art > b {
+  font-family: Georgia, serif; top: 30px; left: 20px;
+  font-size: 52px; letter-spacing: -.06em;
+}
+.book-entry__cover[class*='cover-pattern--'] .cover-art > span {
+  font-size: 6px; letter-spacing: .1em;
+}
+.book-entry__cover .cover-label strong {
+  font-size: 19px; line-height: 1.14; word-break: keep-all; overflow-wrap: anywhere;
+}
+.book-entry__title { gap: 10px; }
+.book-entry__title > div { min-width: 0; }
+.book-entry__title h1 { font-size: 23px; line-height: 1.2; word-break: keep-all; }
+.book-entry__title > span { flex-shrink: 0; white-space: nowrap; }
+.book-entry__quote { padding-inline: 18px; font-size: 15px; word-break: keep-all; }
+.discover-card__footer > div { min-width: 0; }
+.discover-card__footer h1 { word-break: keep-all; line-height: 1.2; }
+.ebook-prologue { margin: 0 0 32px; padding-bottom: 24px; border-bottom: 1px solid #ddd; }
+.ebook-prologue h2 { font-size: 12px; font-weight: 600; color: #777; margin-bottom: 16px; }
+.ebook-prologue p { margin-block: 8px; }

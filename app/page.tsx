@@ -1,7 +1,7 @@
 /*
  * FILE ROLE: 북북의 탐색, 책 소개, 샘플 읽기 화면을 조합하고 화면 간 상태를 이어준다.
  * OWNS: 현재 선택한 책, 탐색 장르와 복귀 위치, 리더 표시 모드와 화면 전환 상태.
- * USES: book-data의 책별 문장 콘텐츠와 공통 PhoneFrame UI.
+ * USES: book-data의 편집 콘텐츠, book-catalog의 서지 정보와 공통 PhoneFrame UI.
  * MUST NOT: 책 요약 원문을 직접 소유하거나 서버 저장과 계정 동기화를 수행한다.
  */
 
@@ -19,7 +19,9 @@ import {
   useState,
 } from 'react';
 import { ArrowLeft, ArrowRight, Bookmark, BookOpen, Clock3, House, Menu, X } from 'lucide-react';
-import { BOOK_SENTENCES, BOOK_SUMMARIES, TEASER_SENTENCES } from './book-data';
+import { getBookContent } from './book-data';
+import { FEED_BOOKS, GENRES, type FeedBook, type Genre } from './book-catalog';
+import './book-covers.css';
 
 type ReadingLine = {
   id: string;
@@ -43,45 +45,8 @@ function startsSupportParagraph(line: ReadingLine) {
   return line.number === 1 || (line.number - 1) % 3 === 0;
 }
 
-function splitSentenceBeats(sentences: readonly string[]) {
-  return sentences.flatMap((sentence) => sentence.split(/(?<=\.)\s+/).filter(Boolean));
-}
 
-type Genre = '전체' | '고전문학' | '로맨스' | '한국' | '해외' | '영어원문' | '자기개발';
-type BookTitle = '이방인' | keyof typeof BOOK_SUMMARIES;
 
-type FeedBook = {
-  title: BookTitle;
-  author: string;
-  category: string;
-  genres: Genre[];
-  coverStyle: string;
-  coverMark: string;
-  coverData: string;
-  quote: string;
-  color: string;
-  foreground: string;
-  description: string;
-};
-
-const FEED_BOOKS: FeedBook[] = [
-  { title: '데미안', author: '헤르만 헤세', category: '성장 소설', genres: ['고전문학', '해외'], coverStyle: 'demian', coverMark: '½', coverData: 'LIGHT / SHADOW', quote: '새는 알에서 나오려고\n투쟁한다.', color: '#ff5b35', foreground: '#20130e', description: '선과 악의 경계를 넘어 자기 자신에게 도달하려는 한 소년의 내면을 따라가는 성장 소설.' },
-  { title: '이방인', author: '알베르 카뮈', category: '고전 소설', genres: ['고전문학', '해외'], coverStyle: 'stranger', coverMark: '●', coverData: '12:00 / ALGER', quote: '오늘 엄마가 죽었다.\n아니, 어쩌면 어제. 모르겠다.', color: '#e6fb63', foreground: '#161616', description: '세상의 규칙과 감정에서 비껴난 한 남자. 무심한 문장 사이로 삶의 부조리를 마주하게 되는 소설.' },
-  { title: '싯다르타', author: '헤르만 헤세', category: '고전 소설', genres: ['고전문학', '해외'], coverStyle: 'siddhartha', coverMark: '≈', coverData: 'RIVER / SELF', quote: '강은 어디에나 있으면서\n언제나 현재에만 있었다.', color: '#39b8a6', foreground: '#102f2d', description: '배움과 방황을 지나 흐르는 강 앞에서 삶과 자아의 의미를 발견하는 구도의 이야기.' },
-  { title: '채식주의자', author: '한강', category: '한국 소설', genres: ['한국'], coverStyle: 'vegetarian', coverMark: 'Y', coverData: 'ROOT / BODY', quote: '나는 이제\n고기를 먹지 않아요.', color: '#d2e8c5', foreground: '#31542f', description: '한 사람의 조용한 거부가 평범했던 일상을 흔들며 만들어내는 낯설고 강렬한 균열.' },
-  { title: '코스모스', author: '칼 세이건', category: '과학 교양', genres: ['해외', '영어원문'], coverStyle: 'cosmos', coverMark: '∞', coverData: '13.8 BY / 10²⁴', quote: '우리는 모두\n별의 물질로 이루어졌다.', color: '#17152d', foreground: '#eee9ff', description: '우주의 탄생에서 인간의 질문까지, 광대한 시공간 속 우리의 위치를 아름답게 설명한다.' },
-  { title: '인간실격', author: '다자이 오사무', category: '고전 소설', genres: ['고전문학', '해외'], coverStyle: 'disqualified', coverMark: '失格', coverData: 'HUMAN / NULL', quote: '부끄럼 많은 생애를\n보냈습니다.', color: '#d8d5ce', foreground: '#1a1918', description: '타인의 세계에 섞이지 못한 한 인간의 고백을 통해 불안과 소외의 가장 깊은 곳을 바라본다.' },
-  { title: '날개', author: '이상', category: '한국 고전', genres: ['고전문학', '한국'], coverStyle: 'wings', coverMark: '翼', coverData: '0m → ∞', quote: '날개야 다시 돋아라.\n한 번만 더 날아보자.', color: '#7d6cff', foreground: '#151126', description: '닫힌 방과 무기력한 일상을 빠져나가려는 의식의 움직임을 실험적인 문장으로 그린 작품.' },
-  { title: '동물농장', author: '조지 오웰', category: '풍자 소설', genres: ['고전문학', '해외', '영어원문'], coverStyle: 'animal-farm', coverMark: '4=2', coverData: 'POWER / RULE', quote: '모든 동물은 평등하다.\n그러나 어떤 동물은 더 평등하다.', color: '#ffde39', foreground: '#2d1710', description: '혁명의 이상이 권력의 언어로 변질되는 과정을 농장의 우화로 날카롭게 보여준다.' },
-  { title: '1984', author: '조지 오웰', category: '디스토피아', genres: ['고전문학', '해외', '영어원문'], coverStyle: 'nineteen', coverMark: '◎', coverData: 'BIG BROTHER / 24·7', quote: '누군가는 언제나\n당신을 보고 있다.', color: '#ef3138', foreground: '#19090a', description: '기억과 언어까지 통제하는 사회에서 한 개인이 진실과 자유를 붙잡으려는 디스토피아 소설.' },
-  { title: '안나 카레니나', author: '레프 톨스토이', category: '고전 로맨스', genres: ['고전문학', '로맨스', '해외'], coverStyle: 'anna', coverMark: 'A↔V', coverData: 'LOVE / SOCIETY', quote: '사랑은 한 사람의 삶을\n어디까지 바꿀 수 있을까.', color: '#8d1736', foreground: '#fff0df', description: '사랑과 결혼, 욕망과 사회적 시선이 충돌하는 삶을 거대한 인물 군상 속에 담아낸 소설.' },
-  { title: '국부론', author: '애덤 스미스', category: '경제 고전', genres: ['고전문학', '해외', '영어원문', '자기개발'], coverStyle: 'wealth', coverMark: '∑', coverData: 'LABOR × MARKET', quote: '부는 금고가 아니라\n사람들의 노동에서 시작된다.', color: '#153f34', foreground: '#f1d36e', description: '분업과 교환, 시장의 작동 원리를 통해 국가와 사회의 부가 어디에서 오는지 탐구한다.' },
-  { title: '사피엔스', author: '유발 하라리', category: '역사 교양', genres: ['해외', '자기개발'], coverStyle: 'sapiens', coverMark: '70K', coverData: 'HOMO / STORY', quote: '인간은 함께 믿는 이야기로\n세상을 바꾸었다.', color: '#eadbc0', foreground: '#352716', description: '인지혁명부터 현대까지 인류가 협력하고 문명을 만든 과정을 거대한 시간축으로 압축한다.' },
-  { title: '급류', author: '정대건', category: '한국 로맨스', genres: ['한국', '로맨스'], coverStyle: 'rapids', coverMark: '≋', coverData: 'FLOW / IMPACT', quote: '우리는 서로에게\n휩쓸리고 있었다.', color: '#1479e8', foreground: '#f3fbff', description: '상처를 품은 두 사람이 거센 물살 같은 시간 속에서 다시 서로에게 향하는 이야기.' },
-  { title: '구의 증명', author: '최진영', category: '한국 소설', genres: ['한국', '로맨스'], coverStyle: 'sphere', coverMark: '○', coverData: 'G ↔ D / ∞', quote: '사라진 뒤에도\n사랑은 몸에 남는다.', color: '#101010', foreground: '#f3eee3', description: '상실한 사람을 기억하고 사랑한다는 일이 얼마나 육체적이고 절실한지 밀도 높게 보여준다.' },
-];
-
-const GENRES: Genre[] = ['전체', '고전문학', '로맨스', '한국', '해외', '영어원문', '자기개발'];
 
 export default function Home() {
   const [isReading, setIsReading] = useState(false);
@@ -158,14 +123,9 @@ function PhoneFrame({ children, className = '', phoneRef, ariaLabel, note, style
 }
 
 function Reader({ book, animationsEnabled, onAnimationsChange, onExit }: { book: FeedBook; animationsEnabled: boolean; onAnimationsChange: (enabled: boolean) => void; onExit: () => void }) {
-  const teaserSentences = useMemo(
-    () => book.title === '이방인' ? splitSentenceBeats(TEASER_SENTENCES) : [],
-    [book.title],
-  );
-  const bookSentences = useMemo(
-    () => splitSentenceBeats(book.title === '이방인' ? BOOK_SENTENCES : BOOK_SUMMARIES[book.title]),
-    [book.title],
-  );
+  const content = getBookContent(book.title);
+  const teaserSentences = content.prologue;
+  const bookSentences = content.sentences;
   const lines = useMemo<ReadingLine[]>(
     () => {
       return [
@@ -518,6 +478,10 @@ function Reader({ book, animationsEnabled, onAnimationsChange, onExit }: { book:
                     <span>{book.author}</span>
                     <h1>{book.title}</h1>
                   </header>
+                  <section className="ebook-prologue" aria-label="프롤로그">
+                    <h2>프롤로그</h2>
+                    {teaserSentences.map((sentence, index) => <p key={index}>{sentence}</p>)}
+                  </section>
                   {ebookParagraphs.map((paragraph, index) => (
                     <p key={index}>{paragraph}</p>
                   ))}
@@ -612,7 +576,8 @@ function BookEntry({
 
 function BookCoverArtwork({ book }: { book: FeedBook }) {
   return (
-    <div className={`book-entry__cover cover--${book.coverStyle}`} aria-label={`${book.title} 표지`}>
+    <div className={`book-entry__cover cover--${book.coverStyle} ${book.coverPattern ? `cover-pattern--${book.coverPattern}` : ''}`}
+      style={{ '--cover-color': book.color, '--cover-ink': book.foreground } as CSSProperties} aria-label={`${book.title} 표지`}>
       <div className="cover-art" aria-hidden="true">
         <b>{book.coverMark}</b>
         <span>{book.coverData}</span>
