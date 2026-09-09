@@ -1,3 +1,10 @@
+/*
+ * FILE ROLE: 북북의 탐색, 책 소개, 샘플 읽기 화면을 조합하고 화면 간 상태를 이어준다.
+ * OWNS: 현재 선택한 책, 탐색 장르와 복귀 위치, 리더 표시 모드와 화면 전환 상태.
+ * USES: book-data의 책별 문장 콘텐츠와 공통 PhoneFrame UI.
+ * MUST NOT: 책 요약 원문을 직접 소유하거나 서버 저장과 계정 동기화를 수행한다.
+ */
+
 'use client';
 
 import {
@@ -12,7 +19,7 @@ import {
   useState,
 } from 'react';
 import { ArrowLeft, ArrowRight, Bookmark, BookOpen, Clock3, House, Menu, X } from 'lucide-react';
-import { BOOK_SENTENCES, TEASER_SENTENCES } from './book-data';
+import { BOOK_SENTENCES, BOOK_SUMMARIES, TEASER_SENTENCES } from './book-data';
 
 type ReadingLine = {
   id: string;
@@ -41,9 +48,10 @@ function splitSentenceBeats(sentences: readonly string[]) {
 }
 
 type Genre = '전체' | '고전문학' | '로맨스' | '한국' | '해외' | '영어원문' | '자기개발';
+type BookTitle = '이방인' | keyof typeof BOOK_SUMMARIES;
 
 type FeedBook = {
-  title: string;
+  title: BookTitle;
   author: string;
   category: string;
   genres: Genre[];
@@ -80,8 +88,10 @@ export default function Home() {
   const [selectedBook, setSelectedBook] = useState<FeedBook | null>(null);
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(true);
+  const [selectedGenre, setSelectedGenre] = useState<Genre>('전체');
+  const discoverScrollTop = useRef(0);
 
-  if (isReading) return <Reader animationsEnabled={animationsEnabled} onAnimationsChange={setAnimationsEnabled} onExit={() => { setIsReading(false); setSelectedBook(null); }} />;
+  if (isReading && selectedBook) return <Reader book={selectedBook} animationsEnabled={animationsEnabled} onAnimationsChange={setAnimationsEnabled} onExit={() => { setIsReading(false); setSelectedBook(null); }} />;
   if (selectedBook) {
     return <BookEntry book={selectedBook} animationsEnabled={animationsEnabled} onBack={() => setSelectedBook(null)} onStartReading={() => setIsReading(true)} />;
   }
@@ -89,8 +99,14 @@ export default function Home() {
     <DiscoverFeed
       animationsEnabled={animationsEnabled}
       isWelcomeOpen={isWelcomeOpen}
+      selectedGenre={selectedGenre}
+      initialScrollTop={discoverScrollTop.current}
       onCloseWelcome={() => setIsWelcomeOpen(false)}
-      onSelectBook={setSelectedBook}
+      onGenreChange={setSelectedGenre}
+      onSelectBook={(book, scrollTop) => {
+        discoverScrollTop.current = scrollTop;
+        setSelectedBook(book);
+      }}
     />
   );
 }
@@ -141,9 +157,15 @@ function PhoneFrame({ children, className = '', phoneRef, ariaLabel, note, style
   );
 }
 
-function Reader({ animationsEnabled, onAnimationsChange, onExit }: { animationsEnabled: boolean; onAnimationsChange: (enabled: boolean) => void; onExit: () => void }) {
-  const teaserSentences = useMemo(() => splitSentenceBeats(TEASER_SENTENCES), []);
-  const bookSentences = useMemo(() => splitSentenceBeats(BOOK_SENTENCES), []);
+function Reader({ book, animationsEnabled, onAnimationsChange, onExit }: { book: FeedBook; animationsEnabled: boolean; onAnimationsChange: (enabled: boolean) => void; onExit: () => void }) {
+  const teaserSentences = useMemo(
+    () => book.title === '이방인' ? splitSentenceBeats(TEASER_SENTENCES) : [],
+    [book.title],
+  );
+  const bookSentences = useMemo(
+    () => splitSentenceBeats(book.title === '이방인' ? BOOK_SENTENCES : BOOK_SUMMARIES[book.title]),
+    [book.title],
+  );
   const lines = useMemo<ReadingLine[]>(
     () => {
       return [
@@ -493,8 +515,8 @@ function Reader({ animationsEnabled, onAnimationsChange, onExit }: { animationsE
               >
                 <article className="ebook-content">
                   <header className="ebook-header">
-                    <span>알베르 카뮈</span>
-                    <h1>이방인</h1>
+                    <span>{book.author}</span>
+                    <h1>{book.title}</h1>
                   </header>
                   {ebookParagraphs.map((paragraph, index) => (
                     <p key={index}>{paragraph}</p>
@@ -556,7 +578,7 @@ function BookEntry({
   const [saved, setSaved] = useState(false);
 
   return (
-    <PhoneFrame className={`phone--entry ${animationsEnabled ? 'phone--screen-enter' : 'phone--no-motion'}`} ariaLabel={`${book.title} 책 소개`} note="책의 분위기를 보고 3분 미리보기를 시작해봐">
+    <PhoneFrame className={`phone--entry ${animationsEnabled ? 'phone--screen-enter' : 'phone--no-motion'}`} ariaLabel={`${book.title} 책 소개`} note="책의 분위기를 보고 1분 미리보기를 시작해봐">
       <div
         className="book-entry"
         style={{ '--card-color': book.color, '--card-foreground': book.foreground } as CSSProperties}
@@ -575,11 +597,11 @@ function BookEntry({
         <section className="book-entry__sheet">
           <div className="book-entry__title">
             <div><h1>{book.title}</h1><p>{book.author}</p></div>
-            <span><Clock3 aria-hidden="true" /> 약 3분</span>
+            <span><Clock3 aria-hidden="true" /> 약 1분</span>
           </div>
           <p className="book-entry__description">{book.description}</p>
           <button type="button" className="book-entry__start" onClick={onStartReading}>
-            3분 미리보기 시작 <ArrowRight aria-hidden="true" />
+            1분 미리보기 시작 <ArrowRight aria-hidden="true" />
           </button>
           <small>스크롤하며 이 책의 분위기를 먼저 만나봐</small>
         </section>
@@ -603,25 +625,41 @@ function BookCoverArtwork({ book }: { book: FeedBook }) {
 function DiscoverFeed({
   animationsEnabled,
   isWelcomeOpen,
+  selectedGenre,
+  initialScrollTop,
   onCloseWelcome,
+  onGenreChange,
   onSelectBook,
 }: {
   animationsEnabled: boolean;
   isWelcomeOpen: boolean;
+  selectedGenre: Genre;
+  initialScrollTop: number;
   onCloseWelcome: () => void;
-  onSelectBook: (book: FeedBook) => void;
+  onGenreChange: (genre: Genre) => void;
+  onSelectBook: (book: FeedBook, scrollTop: number) => void;
 }) {
   const [isGenreMenuOpen, setIsGenreMenuOpen] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState<Genre>('전체');
   const feedRef = useRef<HTMLDivElement>(null);
   const visibleBooks = selectedGenre === '전체'
     ? FEED_BOOKS
     : FEED_BOOKS.filter((book) => book.genres.includes(selectedGenre));
 
   const selectGenre = (genre: Genre) => {
-    setSelectedGenre(genre);
+    onGenreChange(genre);
     setIsGenreMenuOpen(false);
     window.requestAnimationFrame(() => feedRef.current?.scrollTo({ top: 0 }));
+  };
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      if (feedRef.current) feedRef.current.scrollTop = initialScrollTop;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [initialScrollTop]);
+
+  const selectBook = (book: FeedBook) => {
+    onSelectBook(book, feedRef.current?.scrollTop ?? 0);
   };
 
   return (
@@ -671,7 +709,7 @@ function DiscoverFeed({
                 <span>{book.category}</span>
                 <span>{String(index + 1).padStart(2, '0')}</span>
               </div>
-              <button type="button" className="discover-card__quote" onClick={() => onSelectBook(book)}>
+              <button type="button" className="discover-card__quote" onClick={() => selectBook(book)}>
                 <p>{book.quote}</p>
                 <span aria-hidden="true">“</span>
               </button>
@@ -680,7 +718,7 @@ function DiscoverFeed({
                   <h1>{book.title}</h1>
                   <p>{book.author}</p>
                 </div>
-                <button type="button" className="discover-card__open" onClick={() => onSelectBook(book)} aria-label={`${book.title} 살펴보기`}>
+                <button type="button" className="discover-card__open" onClick={() => selectBook(book)} aria-label={`${book.title} 살펴보기`}>
                   <ArrowRight aria-hidden="true" />
                 </button>
               </footer>
