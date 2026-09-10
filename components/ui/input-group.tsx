@@ -1,5 +1,12 @@
 'use client';
 
+/*
+ * FILE ROLE: 입력 필드와 앞뒤 보조 요소를 하나의 조작 단위로 조합한다.
+ * OWNS: 입력 그룹 배치, 크기 변형, 보조 영역의 입력 포커스 전달.
+ * USES: 공통 Button, Input, Textarea 컴포넌트.
+ * MUST NOT: 입력값이나 폼 제출 상태를 직접 관리한다.
+ */
+
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
@@ -50,7 +57,8 @@ function InputGroupAddon({
 }: React.ComponentProps<'div'> & VariantProps<typeof inputGroupAddonVariants>) {
   return (
     <div
-      role="group"
+      role="button"
+      tabIndex={0}
       data-slot="input-group-addon"
       data-align={align}
       className={cn(inputGroupAddonVariants({ align }), className)}
@@ -59,6 +67,11 @@ function InputGroupAddon({
           return;
         }
         e.currentTarget.parentElement?.querySelector('input')?.focus();
+      }}
+      onKeyDown={(event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        event.currentTarget.parentElement?.querySelector('input')?.focus();
       }}
       {...props}
     />

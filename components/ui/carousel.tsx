@@ -1,5 +1,12 @@
 'use client';
 
+/*
+ * FILE ROLE: Embla 기반 캐러셀의 컨텍스트, 탐색 상태, 조작 UI를 제공한다.
+ * OWNS: 캐러셀 API 구독과 이전·다음 이동 가능 상태.
+ * USES: Embla 훅과 공통 Button 컴포넌트.
+ * MUST NOT: 슬라이드 도메인 데이터나 화면별 콘텐츠를 소유한다.
+ */
+
 import * as React from 'react';
 import useEmblaCarousel, {
   type UseEmblaCarouselType,
@@ -95,6 +102,7 @@ function Carousel({
 
   React.useEffect(() => {
     if (!api) return;
+    // oxlint-disable-next-line react/react-compiler -- 외부 Embla API의 최초 스냅샷을 구독 시점에 동기화한다.
     onSelect(api);
     api.on('reInit', onSelect);
     api.on('select', onSelect);

@@ -1,5 +1,12 @@
 'use client';
 
+/*
+ * FILE ROLE: Recharts에 공통 테마, 툴팁, 범례 표현을 제공한다.
+ * OWNS: 차트 설정 컨텍스트와 표시용 키 변환.
+ * USES: Recharts 데이터와 공통 스타일 결합 도구.
+ * MUST NOT: 도메인 데이터 조회나 차트별 비즈니스 계산을 수행한다.
+ */
+
 import * as React from 'react';
 import * as RechartsPrimitive from 'recharts';
 import type { TooltipValueType } from 'recharts';
@@ -11,6 +18,13 @@ const THEMES = { light: '', dark: '.dark' } as const;
 
 const INITIAL_DIMENSION = { width: 320, height: 200 } as const;
 type TooltipNameType = number | string;
+
+function getDisplayKey(...values: unknown[]) {
+  const value = values.find(
+    (candidate) => typeof candidate === 'string' || typeof candidate === 'number',
+  );
+  return value === undefined ? 'value' : String(value);
+}
 
 export type ChartConfig = Record<
   string,
@@ -152,7 +166,7 @@ function ChartTooltipContent({
     }
 
     const [item] = payload;
-    const key = `${labelKey ?? item?.dataKey ?? item?.name ?? 'value'}`;
+    const key = getDisplayKey(labelKey, item?.dataKey, item?.name);
     const itemConfig = getPayloadConfigFromPayload(config, item, key);
     const value =
       !labelKey && typeof label === 'string'
@@ -200,7 +214,7 @@ function ChartTooltipContent({
         {payload
           .filter((item) => item.type !== 'none')
           .map((item, index) => {
-            const key = `${nameKey ?? item.name ?? item.dataKey ?? 'value'}`;
+            const key = getDisplayKey(nameKey, item.name, item.dataKey);
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
             const indicatorColor = color ?? item.payload?.fill ?? item.color;
 
@@ -299,7 +313,7 @@ function ChartLegendContent({
       {payload
         .filter((item) => item.type !== 'none')
         .map((item, index) => {
-          const key = `${nameKey ?? item.dataKey ?? 'value'}`;
+          const key = getDisplayKey(nameKey, item.dataKey);
           const itemConfig = getPayloadConfigFromPayload(config, item, key);
 
           return (

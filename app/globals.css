@@ -430,6 +430,12 @@ body { font-family: 'Pretendard', sans-serif; }
 .sentence-rail::-webkit-scrollbar { display: none; }
 
 .reading-line {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  text-align: inherit;
   width: 100%;
   margin: 0;
   scroll-snap-align: center;

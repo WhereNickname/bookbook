@@ -54,7 +54,7 @@ export default function Home() {
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(true);
   const [selectedGenre, setSelectedGenre] = useState<Genre>('전체');
-  const discoverScrollTop = useRef(0);
+  const [discoverScrollTop, setDiscoverScrollTop] = useState(0);
 
   if (isReading && selectedBook) return <Reader book={selectedBook} animationsEnabled={animationsEnabled} onAnimationsChange={setAnimationsEnabled} onExit={() => { setIsReading(false); setSelectedBook(null); }} />;
   if (selectedBook) {
@@ -65,11 +65,11 @@ export default function Home() {
       animationsEnabled={animationsEnabled}
       isWelcomeOpen={isWelcomeOpen}
       selectedGenre={selectedGenre}
-      initialScrollTop={discoverScrollTop.current}
+      initialScrollTop={discoverScrollTop}
       onCloseWelcome={() => setIsWelcomeOpen(false)}
       onGenreChange={setSelectedGenre}
       onSelectBook={(book, scrollTop) => {
-        discoverScrollTop.current = scrollTop;
+        setDiscoverScrollTop(scrollTop);
         setSelectedBook(book);
       }}
     />
@@ -153,7 +153,7 @@ function Reader({ book, animationsEnabled, onAnimationsChange, onExit }: { book:
   const phoneRef = useRef<HTMLElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
   const ebookRef = useRef<HTMLDivElement>(null);
-  const lineRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const lineRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const wheelDelta = useRef(0);
   const wheelDirection = useRef(0);
   const wheelTriggered = useRef(false);
@@ -169,7 +169,7 @@ function Reader({ book, animationsEnabled, onAnimationsChange, onExit }: { book:
     hasPositionedRail.current = false;
     setMode(nextMode);
     if (nextMode === 'plain') setHasReachedEnd(activeIndexRef.current === lines.length - 1);
-  }, []);
+  }, [lines.length]);
 
   const move = useCallback((amount: number) => {
     const current = activeIndexRef.current;
@@ -290,7 +290,7 @@ function Reader({ book, animationsEnabled, onAnimationsChange, onExit }: { book:
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [move, selectMode]);
+  }, [mode, move, selectMode]);
 
   const finishGesture = (start: GestureStart, x: number, y: number) => {
     const dx = start.x - x;
@@ -385,6 +385,7 @@ function Reader({ book, animationsEnabled, onAnimationsChange, onExit }: { book:
                     <button
                       type="button"
                       role="switch"
+                      aria-label="GUI 애니메이션"
                       aria-checked={animationsEnabled}
                       className={animationsEnabled ? 'motion-setting__switch--active' : ''}
                       onPointerDown={(event) => event.stopPropagation()}
@@ -430,7 +431,8 @@ function Reader({ book, animationsEnabled, onAnimationsChange, onExit }: { book:
                   const isActive = index === activeIndex;
                   const counter = line.section === 'teaser' ? '프롤로그' : `${line.number}/${bookBeatCount}`;
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={line.id}
                       ref={(node) => { lineRefs.current[index] = node; }}
                       className={`reading-line ${isActive ? `reading-line--active ${getActiveLineSize(line.text)}` : ''} ${!isActive && startsSupportParagraph(line) ? 'reading-line--paragraph-start' : ''}`}
@@ -460,7 +462,7 @@ function Reader({ book, animationsEnabled, onAnimationsChange, onExit }: { book:
                     >
                       {isActive && <span className="counter">{counter}</span>}
                       <p>{line.text}</p>
-                    </div>
+                    </button>
                   );
                 })}
               </div>

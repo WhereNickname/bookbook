@@ -14,16 +14,17 @@ const cache = new Map();
 function load(file) {
   const absolute = path.resolve(root, file);
   if (cache.has(absolute)) return cache.get(absolute);
-  const module = { exports: {} };
-  cache.set(absolute, module.exports);
+  const moduleRecord = { exports: {} };
+  cache.set(absolute, moduleRecord.exports);
   const code = ts.transpileModule(fs.readFileSync(absolute, 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
+  // oxlint-disable-next-line typescript/no-implied-eval -- 격리된 로컬 TypeScript 콘텐츠만 CommonJS로 평가한다.
   new Function('require', 'module', 'exports', code)((specifier) => {
     if (!specifier.startsWith('.')) throw new Error('Only local content imports are allowed');
     return load(path.resolve(path.dirname(absolute), `${specifier}.ts`));
-  }, module, module.exports);
-  return module.exports;
+  }, moduleRecord, moduleRecord.exports);
+  return moduleRecord.exports;
 }
 
 const { ALL_CONTENT, getBookContent } = load('app/book-data.ts');
