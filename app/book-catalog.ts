@@ -11,7 +11,7 @@ export type FeedBook = {
   title: string; author: string; category: string; genres: Genre[];
   coverStyle: string; coverMark: string; coverData: string;
   quote: string; color: string; foreground: string; description: string;
-  isbn?: string; coverUrl?: string;
+  isbn?: string; coverUrl?: string; coverUrls?: string[];
   coverPattern?: 'wave' | 'orbit' | 'grid' | 'split';
 };
 const ORIGINAL_BOOKS: FeedBook[] = [

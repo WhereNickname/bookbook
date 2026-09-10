@@ -1,6 +1,6 @@
 /*
  * FILE ROLE: 하드코딩된 카탈로그를 Daum 책 검색에서 한 번 조회해 정적 표지 매핑을 생성한다.
- * OWNS: ISBN 우선 검색, 검색 결과 선택, book-covers.generated.ts 출력.
+ * OWNS: 제목과 저자 기준 판본 검색, 중복 제거, book-covers.generated.ts 출력.
  * USES: KAKAO_REST_API_KEY 환경변수와 Kakao Daum 책 검색 REST API.
  * MUST NOT: 앱 런타임에서 실행되거나 REST API 키를 출력·저장한다.
  */
@@ -18,14 +18,11 @@ if (!apiKey) {
 }
 
 const catalogSource = await fs.readFile(catalogPath, 'utf8');
-const currentCoverSource = await fs.readFile(outputPath, 'utf8');
 const entryPattern = /title:\s*'([^']+)',\s*author:\s*'([^']+)'|"title":"([^"]+)","author":"([^"]+)"/gu;
 const books = [...catalogSource.matchAll(entryPattern)].map((match) => ({
   title: match[1] ?? match[3],
   author: match[2] ?? match[4],
 }));
-const storedMatch = currentCoverSource.match(/BOOK_COVERS[^=]*=\s*(\{[\s\S]*\});/u);
-const previousCovers = storedMatch ? JSON.parse(storedMatch[1]) : {};
 const searchAliases = {
   '아토믹 해빗츠': '아주 작은 습관의 힘',
 };
@@ -39,11 +36,10 @@ const selectIsbn = (value = '') => {
 
 const stored = {};
 for (const book of books) {
-  const knownIsbn = previousCovers[book.title]?.isbn;
   const searchTitle = searchAliases[book.title] ?? book.title;
   const query = new URLSearchParams({
-    query: knownIsbn ?? searchTitle,
-    target: knownIsbn ? 'isbn' : 'title',
+    query: searchTitle,
+    target: 'title',
     sort: 'accuracy',
     size: '50',
   });
@@ -55,34 +51,44 @@ for (const book of books) {
   const title = normalize(searchTitle);
   const author = normalize(book.author);
   const candidates = (payload.documents ?? []).filter((item) => item.thumbnail);
-  const selected = candidates.find((item) => {
+  const matchingCandidates = candidates.filter((item) => {
     const candidateTitle = normalize(item.title ?? '');
     const candidateAuthors = normalize((item.authors ?? []).join(' '));
     return candidateTitle.includes(title) && (candidateAuthors.includes(author) || author.includes(candidateAuthors));
-  }) ?? candidates.find((item) => normalize(item.title ?? '').includes(title)) ?? candidates[0];
+  });
+  const titleCandidates = candidates.filter((item) => normalize(item.title ?? '').includes(title));
+  const orderedCandidates = [...matchingCandidates, ...titleCandidates];
+  const uniqueCandidates = [...new Map(orderedCandidates.map((item) => [item.thumbnail, item])).values()].slice(0, 3);
 
-  if (!selected) {
+  if (uniqueCandidates.length === 0) {
     console.warn(`표지 없음: ${book.title}`);
     continue;
   }
 
-  const isbn = selectIsbn(selected.isbn);
+  const covers = uniqueCandidates.map((candidate) => {
+    const isbn = selectIsbn(candidate.isbn);
+    return {
+      ...(isbn ? { isbn } : {}),
+      coverUrl: candidate.thumbnail.replace(/^http:/u, 'https:'),
+    };
+  });
   stored[book.title] = {
-    ...(isbn ? { isbn } : {}),
-    coverUrl: selected.thumbnail.replace(/^http:/u, 'https:'),
+    ...covers[0],
+    coverUrls: covers.map((cover) => cover.coverUrl),
   };
-  console.log(`표지 확보: ${book.title}`);
+  console.log(`표지 확보: ${book.title} (${covers.length}종)`);
 }
 
 const output = `/*
  * FILE ROLE: 개발 단계에서 확정한 Kakao Daum 책 표지 식별자와 URL을 정적으로 제공한다.
- * OWNS: 책 제목별 ISBN과 표지 URL 스냅샷.
+ * OWNS: 책 제목별 대표 ISBN과 판본 표지 URL 스냅샷.
  * USES: collect-kakao-book-covers 스크립트가 생성한 공개 Daum 책 메타데이터.
  * MUST NOT: 런타임 API 요청이나 표지 검색을 수행한다.
  */
 export type StoredBookCover = {
   isbn?: string;
   coverUrl: string;
+  coverUrls: string[];
 };
 
 export const BOOK_COVERS: Record<string, StoredBookCover> = ${JSON.stringify(stored, null, 2)};

@@ -541,7 +541,63 @@ function BookEntry({
   onBack: () => void;
   onStartReading: () => void;
 }) {
-  const [saved, setSaved] = useState(false);
+  const coverUrls = book.coverUrls?.length ? book.coverUrls : book.coverUrl ? [book.coverUrl] : [];
+  const initialCoverIndex = Math.min(1, Math.max(coverUrls.length - 1, 0));
+  const [savedBooks, setSavedBooks] = useState<Set<string>>(() => new Set());
+  const [activeCoverIndex, setActiveCoverIndex] = useState(initialCoverIndex);
+  const coverRailRef = useRef<HTMLDivElement>(null);
+  const coverScrollTimerRef = useRef<number | null>(null);
+  const saved = savedBooks.has(book.title);
+
+  const selectCenteredCover = useCallback(() => {
+    const rail = coverRailRef.current;
+    if (!rail) return;
+
+    const railCenter = rail.scrollLeft + rail.clientWidth / 2;
+    const slides = Array.from(rail.querySelectorAll<HTMLElement>('[data-cover-index]'));
+    const centeredSlide = slides.reduce((closest, slide) => {
+      const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
+      const closestCenter = closest.offsetLeft + closest.offsetWidth / 2;
+      return Math.abs(slideCenter - railCenter) < Math.abs(closestCenter - railCenter) ? slide : closest;
+    }, slides[0]);
+    const centeredIndex = Number(centeredSlide?.dataset.coverIndex);
+    if (Number.isInteger(centeredIndex)) setActiveCoverIndex(centeredIndex);
+  }, []);
+
+  useEffect(() => {
+    coverRailRef.current?.querySelector<HTMLElement>(`[data-cover-index="${initialCoverIndex}"]`)?.scrollIntoView({
+      behavior: 'instant',
+      block: 'nearest',
+      inline: 'center',
+    });
+  }, [initialCoverIndex]);
+
+  useEffect(() => () => {
+    if (coverScrollTimerRef.current !== null) window.clearTimeout(coverScrollTimerRef.current);
+  }, []);
+
+  const handleCoverScroll = () => {
+    if (coverScrollTimerRef.current !== null) window.clearTimeout(coverScrollTimerRef.current);
+    coverScrollTimerRef.current = window.setTimeout(selectCenteredCover, 120);
+  };
+
+  const handleCoverClick = (index: number) => {
+    setActiveCoverIndex(index);
+    coverRailRef.current?.querySelector<HTMLElement>(`[data-cover-index="${index}"]`)?.scrollIntoView({
+      behavior: animationsEnabled ? 'smooth' : 'instant',
+      block: 'nearest',
+      inline: 'center',
+    });
+  };
+
+  const toggleSaved = () => {
+    setSavedBooks((current) => {
+      const next = new Set(current);
+      if (next.has(book.title)) next.delete(book.title);
+      else next.add(book.title);
+      return next;
+    });
+  };
 
   return (
     <PhoneFrame className={`phone--entry ${animationsEnabled ? 'phone--screen-enter' : 'phone--no-motion'}`} ariaLabel={`${book.title} 책 소개`} note="책의 분위기를 보고 1분 미리보기를 시작해봐">
@@ -552,13 +608,27 @@ function BookEntry({
         <header className="book-entry__header">
           <button type="button" onClick={onBack} aria-label="탐색으로 돌아가기"><ArrowLeft aria-hidden="true" /></button>
           <span>{book.category}</span>
-          <button type="button" onClick={() => setSaved((current) => !current)} aria-label="책 저장" aria-pressed={saved}>
+          <button type="button" onClick={toggleSaved} aria-label="책 저장" aria-pressed={saved}>
             <Bookmark aria-hidden="true" fill={saved ? 'currentColor' : 'none'} />
           </button>
         </header>
         <section className="book-entry__hero">
-          <BookCoverArtwork book={book} />
-          <p className="book-entry__quote">{book.quote}</p>
+          <div className="book-entry__cover-rail" ref={coverRailRef} onScroll={handleCoverScroll} aria-label={`${book.title} 판본 표지 목록`}>
+            {coverUrls.map((coverUrl, index) => (
+              <button
+                type="button"
+                className={`book-entry__cover-slide ${index === activeCoverIndex ? 'book-entry__cover-slide--active' : ''}`}
+                data-cover-index={index}
+                key={coverUrl}
+                onClick={() => handleCoverClick(index)}
+                aria-label={`${book.title} 표지 ${index + 1}`}
+                aria-current={index === activeCoverIndex ? 'true' : undefined}
+              >
+                <BookCoverArtwork book={book} coverUrl={coverUrl} />
+              </button>
+            ))}
+          </div>
+          <p className="book-entry__quote" aria-live="polite">{book.quote}</p>
         </section>
         <section className="book-entry__sheet">
           <div className="book-entry__title">
@@ -576,20 +646,21 @@ function BookEntry({
   );
 }
 
-function BookCoverArtwork({ book }: { book: FeedBook }) {
+function BookCoverArtwork({ book, coverUrl = book.coverUrl }: { book: FeedBook; coverUrl?: string }) {
   const [hasCoverError, setHasCoverError] = useState(false);
 
   return (
     <div className={`book-entry__cover cover--${book.coverStyle} ${book.coverPattern ? `cover-pattern--${book.coverPattern}` : ''}`}
       style={{ '--cover-color': book.color, '--cover-ink': book.foreground } as CSSProperties} aria-label={`${book.title} 표지`}>
-      {book.coverUrl && !hasCoverError && (
+      {coverUrl && !hasCoverError && (
         // oxlint-disable-next-line next/no-img-element -- 정적 Daum 책 외부 URL을 쓰는 Vite MVP다.
         <img
           className="book-entry__cover-image"
-          src={book.coverUrl}
+          src={coverUrl}
           alt=""
           aria-hidden="true"
           referrerPolicy="no-referrer"
+          loading="lazy"
           onError={() => setHasCoverError(true)}
         />
       )}

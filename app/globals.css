@@ -147,13 +147,18 @@ body { font-family: 'Pretendard', sans-serif; }
 .discover-empty p { margin: 10px 0 25px; color: #777; font-size: 12px; line-height: 1.55; }
 .discover-empty button { padding: 11px 16px; border: 0; border-radius: 18px; background: #171717; color: #fff; font-size: 11px; font-weight: 700; }
 
-.phone--entry { touch-action: manipulation; user-select: none; }
+.phone--entry { touch-action: pan-x; user-select: none; }
 .book-entry { height: 100%; position: relative; overflow: hidden; color: var(--card-foreground); background: var(--card-color); }
 .book-entry__header { position: absolute; z-index: 3; top: 0; right: 0; left: 0; height: 82px; display: grid; grid-template-columns: 40px 1fr 40px; align-items: end; padding: 0 20px 8px; }
 .book-entry__header > span { padding-bottom: 9px; font-size: 11px; font-weight: 650; text-align: center; opacity: .68; }
 .book-entry__header button { width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .38); color: inherit; }
 .book-entry__header svg { width: 18px; height: 18px; }
-.book-entry__hero { height: 57%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 50px; }
+.book-entry__hero { height: 57%; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding-top: 50px; }
+.book-entry__cover-rail { width: 100%; display: flex; gap: 24px; overflow-x: auto; padding: 18px 123px 22px; scroll-padding-inline: 123px; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; touch-action: pan-x; }
+.book-entry__cover-rail::-webkit-scrollbar { display: none; }
+.book-entry__cover-slide { flex: 0 0 144px; display: block; padding: 0; border: 0; background: transparent; opacity: .42; scroll-snap-align: center; cursor: pointer; transform: scale(.88); transition: opacity .22s ease, transform .22s ease; }
+.book-entry__cover-slide--active { opacity: 1; transform: scale(1); }
+.phone--no-motion .book-entry__cover-slide { transition: none; }
 .book-entry__cover { width: 144px; height: 198px; position: relative; overflow: hidden; color: #111; box-shadow: 12px 16px 28px rgba(0, 0, 0, .22); transform: rotate(-2deg); }
 .book-entry__cover-image { position: absolute; z-index: 4; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #eee; }
 .cover-art { position: absolute; inset: 0; overflow: hidden; }
@@ -204,7 +209,7 @@ body { font-family: 'Pretendard', sans-serif; }
 .cover--rapids { background: #1479e8; color: #f3fbff; }.cover--rapids .cover-art { background: repeating-radial-gradient(ellipse at -10% 20%,transparent 0 13px,#f3fbff55 14px 16px,transparent 17px 25px); }.cover--rapids .cover-art::after { top: 21px; right: -25px; width: 125px; height: 125px; border: 2px solid currentColor; border-radius: 50%; }.cover--rapids .cover-art>b { font-size: 58px; }
 .cover--sphere { background: #101010; color: #f3eee3; }.cover--sphere .cover-art { background: radial-gradient(circle at 67% 35%,transparent 0 32px,#f3eee3 33px 34px,transparent 35px); }.cover--sphere .cover-art::after { top: 26px; right: 14px; width: 70px; height: 70px; border: 1px dashed currentColor; border-radius: 50%; }.cover--sphere .cover-art>b { font-size: 60px; }
 
-.book-entry__quote { margin: 28px 0 0; white-space: pre-line; font-family: 'Bookk Myungjo', serif; font-size: 16px; font-weight: 700; line-height: 1.45; letter-spacing: -.045em; text-align: center; }
+.book-entry__quote { min-height: 46px; margin: 4px 24px 0; white-space: pre-line; font-family: 'Bookk Myungjo', serif; font-size: 16px; font-weight: 700; line-height: 1.45; letter-spacing: -.045em; text-align: center; }
 .book-entry__sheet { height: 43%; padding: 28px 27px 24px; border-radius: 30px 30px 0 0; background: #fff; color: #171717; box-shadow: 0 -8px 30px rgba(0, 0, 0, .07); }
 .book-entry__title { display: flex; align-items: flex-start; justify-content: space-between; }
 .book-entry__title h1 { margin: 0 0 5px; font-size: 25px; line-height: 1; letter-spacing: -.08em; }
