@@ -22,7 +22,7 @@ export const LITERATURE_CONTENT: BookContent[] = [
 작살을 꽂는다. 배 옆에 묶는다.
 피 냄새를 따라 상어가 다가오고,
 노인은 부러진 무기로도 맞선다.
-항구에 돌아온 배에는 뼈만 남는다.
+항구로 돌아온 배에 남은 것은 뼈뿐.
 소년이 잠든 노인의 손을 보는데.
 노인의 꿈속 해변을 걷는 사자들.`) },
   { title: '위대한 개츠비', length: 'novella', symbol: '초록 불빛', quoteSource: 'https://www.gutenberg.org/ebooks/64317 (결말 직접 번역)',
@@ -64,8 +64,8 @@ export const LITERATURE_CONTENT: BookContent[] = [
 그는 끝내 삶을 옮겨오지 않는다.
 어느 밤 창고에서 불이 난다.
 높은 곳에서 요코의 몸이 떨어지는데.
-고마코가 달려가 그 몸을 안는다.
-군중 속 시마무라가 하늘을 올려다본다.
+달려가 그 몸을 안는 고마코.
+군중 속에서 하늘을 올려다보는 시마무라.
 머리 위로 쏟아지는 듯한 은하수.`) },
   { title: '브람스를 좋아하세요...', length: 'novella', symbol: '브람스', quoteSource: 'https://www.yes24.com/product/goods/2950700 (제목과 초대의 질문)',
     prologue: lines(`브람스를 좋아하세요?
@@ -85,9 +85,9 @@ export const LITERATURE_CONTENT: BookContent[] = [
 폴은 익숙한 사람에게 돌아간다.
 시몽이 계단을 내려간다.
 폴은 자신이 늙었다고 외치는데.
-다시 로제의 전화를 기다린다.
+다시 시작된 로제의 전화를 기다리는 시간.
 오늘도 늦겠다는 목소리.
-방 안에는 한 사람이 남는다.`) },
+방 안에 홀로 남은 한 사람.`) },
   { title: '첫사랑', length: 'short', symbol: '채찍', quoteSource: 'https://www.gutenberg.org/cache/epub/56878/pg56878-images.html (청춘을 부르는 회고, 직접 번역)',
     prologue: lines(`오, 청춘이여. 오, 첫사랑이여.
 여름 별장의 닫힌 창문.`),
@@ -121,7 +121,7 @@ export const LITERATURE_CONTENT: BookContent[] = [
 여우가 길들인다는 말을 가르친다.
 왕자는 자기 장미를 떠올리고,
 비행사와 사막의 우물에서 물을 마신다.
-밤에 노란 뱀이 발목 가까이 다가온다.
+밤, 발목 가까이 다가오는 노란 뱀.
 아침에는 작은 몸이 보이지 않는데.
 비행사가 올려다본 별들에서 웃음소리.`) },
   { title: '눈먼 자들의 도시', length: 'long', symbol: '흰', quoteSource: 'https://www.yes24.com/product/goods/318766 (출판사 소개 인용과 편집 연결문)',
@@ -146,8 +146,8 @@ export const LITERATURE_CONTENT: BookContent[] = [
 의사의 아내가 먹을 것을 찾는다.
 한 개가 다가와 그녀의 눈물을 핥는다.
 비가 내려 여자들이 몸을 씻는데.
-처음 눈먼 남자가 다시 보인다고 외친다.
-다른 사람들도 차례로 눈을 뜬다.
+다시 보인다는 첫 번째 남자의 외침.
+차례로 눈을 뜨는 다른 사람들.
 의사의 아내는 흰 하늘을 올려다보고,
 다시 고개를 내린다. 도시는 거기 있다.`) },
   { title: '멋진 신세계', length: 'long', symbol: '소마', quoteSource: 'https://www.yes24.com/product/goods/18360997 (짧은 인용)',
@@ -191,7 +191,7 @@ export const LITERATURE_CONTENT: BookContent[] = [
 등에 박힌 사과가 썩어간다.
 바이올린 소리를 따라 밖으로 나오고,
 하숙인들이 그를 발견한다.
-여동생이 이제 보내야 한다고 말한다.
+이제 보내야 한다는 여동생의 말.
 새벽에 그레고르는 마지막 숨을 내쉬는데.
 가족은 전차를 탄다. 창밖의 봄빛.`) },
   { title: '수레바퀴 아래서', length: 'novella', symbol: '수레바퀴', quoteSource: 'Hesse, Unterm Rad의 교장 경고, 직접 번역',
@@ -261,9 +261,9 @@ export const LITERATURE_CONTENT: BookContent[] = [
 선생님 집에서도 오래 머물지 못한다.
 혼자 서쪽으로 떠나려 하고,
 피비가 가방을 들고 따라온다.
-홀든은 떠나지 않겠다고 한다.
+떠나지 않겠다는 홀든의 대답.
 회전목마의 피비가 금고리를 향해 손을 뻗는데.
-그는 비를 맞으며 지켜본다.
+비를 맞으며 바라보는 홀든.
 빙글빙글 돌아오는 작은 얼굴.`) },
   { title: '젊은 베르테르의 슬픔', length: 'novella', symbol: '편지', quoteSource: 'https://www.gutenberg.org/cache/epub/2527/pg2527-images.html (첫 편지 직접 번역)',
     prologue: lines(`떠나온 것이 얼마나 기쁜지.
@@ -283,7 +283,7 @@ export const LITERATURE_CONTENT: BookContent[] = [
 오시안의 시를 읽다 그녀를 끌어안는다.
 로테는 방을 나가 문을 닫는데.
 그는 마지막 편지를 남긴다.
-알베르트의 권총을 빌린 뒤 목숨을 끊는다.
+알베르트의 권총. 이어진 한 발.
 장례에는 성직자가 오지 않고,
 밤에 묻힌 무덤. 끝난 편지.`) },
   { title: '도리언 그레이의 초상', length: 'medium', symbol: '초상', quoteSource: 'https://www.gutenberg.org/cache/epub/174/pg174-images.html (Henry의 유혹 구절 직접 번역)',

@@ -471,8 +471,8 @@ body { font-family: 'Pretendard', sans-serif; }
   text-wrap: balance;
 }
 
-.reading-line--compact { --active-font-size: 22px; --active-line-height: 1.42; }
-.reading-line--dense { --active-font-size: 20px; --active-line-height: 1.48; }
+.reading-line--compact { --active-font-size: 20px; --active-line-height: 1.42; }
+.reading-line--dense { --active-font-size: 18px; --active-line-height: 1.46; }
 
 .phone--plain .reading-line p {
   width: 100%;
@@ -493,11 +493,17 @@ body { font-family: 'Pretendard', sans-serif; }
   margin-inline: auto;
   font-family: var(--display-font);
   min-height: 0;
-  font-size: var(--active-font-size, 25px);
+  font-size: var(--active-font-size, 22px);
   font-weight: var(--display-weight);
   line-height: var(--active-line-height, 1.38);
   letter-spacing: -.065em;
   opacity: 1;
+  animation: active-line-settle 460ms cubic-bezier(.22, 1, .36, 1) both;
+}
+
+@keyframes active-line-settle {
+  from { transform: translateY(-16px); }
+  to { transform: translateY(0); }
 }
 
 .counter {

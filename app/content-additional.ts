@@ -32,7 +32,7 @@ export const ADDITIONAL_CONTENT: BookContent[] = [
 스비드리가일로프는 두냐를 붙잡으려 한다.
 그녀를 놓아준 뒤 스스로 목숨을 끊는데.
 라스콜니코프는 경찰서에서 자백한다.
-소냐가 시베리아까지 따라간다.
+시베리아까지 이어진 소냐의 발걸음.
 그는 소냐의 무릎 앞에 엎드리고,
 강 건너 펼쳐진 땅. 아직 남은 날들.`) },
   { title: '페스트', length: 'long', symbol: '쥐', quoteSource: 'https://m.yes24.com/goods/detail/60545672 (인간에 관한 결말 구절 축약 번역)',
@@ -58,8 +58,8 @@ export const ADDITIONAL_CONTENT: BookContent[] = [
 타루도 병에 걸린다.
 리외의 노력 끝에도 타루는 죽는다.
 도시 밖 아내의 죽음도 전해지는데.
-문이 열리고 사람들은 껴안는다.
-리외는 그 곁에서 기록을 남긴다.
+열린 문 앞에서 서로를 껴안는 사람들.
+그 환호 곁에 남겨지는 리외의 기록.
 축제 소리 아래 잠들어 있을 쥐들.`) },
   { title: '지킬 박사와 하이드 씨', length: 'short', symbol: '약', quoteSource: 'Stevenson, Strange Case of Dr Jekyll and Mr Hyde의 고백, 직접 번역',
     prologue: lines(`인간은 진정 하나가 아니라 둘이다.
@@ -102,8 +102,8 @@ export const ADDITIONAL_CONTENT: BookContent[] = [
 죽은 캐서린의 흔적을 찾는다.
 어린 캐서린이 헤어턴에게 글을 가르친다.
 히스클리프는 식사를 놓고 창가에 머무는데.
-어느 아침 열린 창 아래 죽어 있다.
-두 젊은이는 함께 떠날 날을 정한다.
+어느 아침, 열린 창 아래의 시신.
+두 젊은이가 정한 함께 떠날 날.
 무덤 세 개 위로 지나가는 황야의 바람.`) },
   { title: '프랑켄슈타인', length: 'medium', symbol: '창조', quoteSource: 'Mary Shelley, Frankenstein의 Adam/fallen angel 구절, 직접 번역',
     prologue: lines(`나는 당신의 아담이어야 했다.
@@ -126,7 +126,7 @@ export const ADDITIONAL_CONTENT: BookContent[] = [
 빅터는 창조물을 북쪽까지 추격한다.
 얼음 사이에서 탐험선에 구조되는데.
 월턴에게 이야기를 남기고 숨을 거둔다.
-창조물이 죽은 빅터 앞에 선다.
+죽은 빅터 앞에 선 창조물.
 스스로를 태우겠다고 말하고,
 빙판을 타고 멀어진다. 북극의 어둠.`) },
 ];

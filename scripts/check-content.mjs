@@ -47,6 +47,8 @@ for (const book of ALL_CONTENT) {
   ends.forEach((end, i) => {
     if (end && i > 1) check(!(end === ends[i - 1] && end === ends[i - 2]), `${book.title}: ${i - 1}~${i + 1}줄 ${end} 어미 반복`);
   });
+  const closingFiniteEndings = book.sentences.slice(-5).filter((sentence) => /(?:다|데)[.!?…]*$/u.test(sentence));
+  check(closingFiniteEndings.length <= 2, `${book.title}: 마지막 5줄의 ~다/~데 어미 과다`);
 }
 for (const book of FEED_BOOKS) {
   const content = getBookContent(book.title);

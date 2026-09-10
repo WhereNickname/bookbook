@@ -35,8 +35,8 @@ type ReadingMode = 'plain' | 'ebook';
 
 function getActiveLineSize(text: string) {
   const characterCount = text.replace(/\s/g, '').length;
-  if (characterCount > 34) return 'reading-line--dense';
-  if (characterCount > 25) return 'reading-line--compact';
+  if (characterCount > 30) return 'reading-line--dense';
+  if (characterCount > 21) return 'reading-line--compact';
   return '';
 }
 
