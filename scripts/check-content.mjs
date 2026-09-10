@@ -1,6 +1,6 @@
 /*
  * FILE ROLE: 실제 콘텐츠와 카탈로그 사이의 출판 규칙을 검사한다.
- * OWNS: 누락·중복·분량·상징·반복 어미 검사와 실패 종료 코드.
+ * OWNS: 누락·중복·분량·상징·반복 어미 검사, 승인된 수작업 원고 예외와 실패 종료 코드.
  * USES: TypeScript 변환기와 읽기 전용 로컬 콘텐츠 모듈.
  * MUST NOT: 콘텐츠를 자동 수정하거나 앱을 실행한다.
  */
@@ -32,24 +32,33 @@ const { FEED_BOOKS } = load('app/book-catalog.ts');
 const { LENGTH_TARGETS } = load('app/content-types.ts');
 const errors = [];
 const check = (condition, message) => { if (!condition) errors.push(message); };
+const CONTENT_CHECK_EXCEPTIONS = new Map([
+  ['이방인', { sentenceCount: 59, allowEndingRepetition: true }],
+]);
 check(ALL_CONTENT.length === 41 && FEED_BOOKS.length === 41, '전체 41권이어야 함');
 check(new Set(ALL_CONTENT.map((b) => b.title)).size === ALL_CONTENT.length, '콘텐츠 중복');
 check(new Set(FEED_BOOKS.map((b) => b.title)).size === FEED_BOOKS.length, '카탈로그 중복');
 for (const book of ALL_CONTENT) {
+  const exception = CONTENT_CHECK_EXCEPTIONS.get(book.title);
   check(book.prologue.length >= 2 && book.prologue.length <= 3, `${book.title}: 프롤로그 수`);
-  check(book.sentences.length === LENGTH_TARGETS[book.length], `${book.title}: 원작 분량 구간 불일치`);
-  check(book.sentences.length >= 15 && book.sentences.length <= 25, `${book.title}: 본문 수`);
+  if (exception) check(book.sentences.length === exception.sentenceCount, `${book.title}: 승인된 예외 본문 수`);
+  else {
+    check(book.sentences.length === LENGTH_TARGETS[book.length], `${book.title}: 원작 분량 구간 불일치`);
+    check(book.sentences.length >= 15 && book.sentences.length <= 25, `${book.title}: 본문 수`);
+  }
   check(book.sentences.some((s) => s.includes(book.symbol)), `${book.title}: 상징 누락 ${book.symbol}`);
   check(book.quoteSource.length > 0, `${book.title}: 프롤로그 출처 메모 누락`);
   const ends = book.sentences.map((s) => {
     const clean = s.replace(/[.!?…]+$/u, '');
     return clean.match(/(는데|지만|하고|뿐|까|다|고)$/u)?.[1] ?? '';
   });
-  ends.forEach((end, i) => {
-    if (end && i > 1) check(!(end === ends[i - 1] && end === ends[i - 2]), `${book.title}: ${i - 1}~${i + 1}줄 ${end} 어미 반복`);
-  });
-  const closingFiniteEndings = book.sentences.slice(-5).filter((sentence) => /(?:다|데)[.!?…]*$/u.test(sentence));
-  check(closingFiniteEndings.length <= 2, `${book.title}: 마지막 5줄의 ~다/~데 어미 과다`);
+  if (!exception?.allowEndingRepetition) {
+    ends.forEach((end, i) => {
+      if (end && i > 1) check(!(end === ends[i - 1] && end === ends[i - 2]), `${book.title}: ${i - 1}~${i + 1}줄 ${end} 어미 반복`);
+    });
+    const closingFiniteEndings = book.sentences.slice(-5).filter((sentence) => /(?:다|데)[.!?…]*$/u.test(sentence));
+    check(closingFiniteEndings.length <= 2, `${book.title}: 마지막 5줄의 ~다/~데 어미 과다`);
+  }
 }
 for (const book of FEED_BOOKS) {
   const content = getBookContent(book.title);

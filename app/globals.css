@@ -35,6 +35,7 @@ body { font-family: 'Pretendard', sans-serif; }
   position: relative;
   padding: 24px 16px 54px;
 }
+.prototype-stage--desktop { min-height: 100svh; padding: 0; }
 
 .discover-header {
   position: absolute;
@@ -148,6 +149,7 @@ body { font-family: 'Pretendard', sans-serif; }
 .discover-empty button { padding: 11px 16px; border: 0; border-radius: 18px; background: #171717; color: #fff; font-size: 11px; font-weight: 700; }
 
 .phone--entry { touch-action: pan-x; user-select: none; }
+.phone--entry .phone-screen { background: var(--card-color); }
 .book-entry { height: 100%; position: relative; overflow: hidden; color: var(--card-foreground); background: var(--card-color); }
 .book-entry__header { position: absolute; z-index: 3; top: 0; right: 0; left: 0; height: 82px; display: grid; grid-template-columns: 40px 1fr 40px; align-items: end; padding: 0 20px 8px; }
 .book-entry__header > span { padding-bottom: 9px; font-size: 11px; font-weight: 650; text-align: center; opacity: .68; }
@@ -226,9 +228,9 @@ body { font-family: 'Pretendard', sans-serif; }
   height: 844px;
   position: relative;
   overflow: hidden;
-  border: 8px solid #0a0a0a;
+  border: 0;
   border-radius: 48px;
-  background: #fff;
+  background: #0a0a0a;
   box-shadow: 0 28px 70px rgba(0,0,0,.20), 0 5px 16px rgba(0,0,0,.16);
   touch-action: none;
   user-select: none;
@@ -239,16 +241,6 @@ body { font-family: 'Pretendard', sans-serif; }
   --counter-font: 'Bookk Gothic', sans-serif;
   --support-font: 'Pretendard', sans-serif;
   --support-weight: 400;
-}
-
-.phone::after {
-  content: '';
-  position: absolute;
-  z-index: 20;
-  inset: 0;
-  border: 2px solid #0a0a0a;
-  border-radius: 40px;
-  pointer-events: none;
 }
 
 .phone--discover {
@@ -267,11 +259,12 @@ body { font-family: 'Pretendard', sans-serif; }
   position: relative;
   flex: 0 0 auto;
 }
+.phone-viewport--desktop { width: 100vw; height: 100svh; }
 
 .speaker {
   position: absolute;
   z-index: 10;
-  top: 12px;
+  top: 25px;
   left: 50%;
   width: 76px;
   height: 20px;
@@ -282,11 +275,17 @@ body { font-family: 'Pretendard', sans-serif; }
 
 .phone-screen {
   position: absolute;
-  inset: 0;
+  inset: 13px;
   overflow: hidden;
-  border-radius: 39px;
+  border-radius: 35px;
   background: #fff;
 }
+.phone--desktop { width: 100%; height: 100%; border-radius: 0; box-shadow: none; }
+.phone--desktop .speaker { display: none; }
+.phone--desktop .phone-screen { inset: 0; border-radius: 0; }
+.prototype-stage--desktop .desktop-note { display: none; }
+.phone--desktop .discover-card { padding-right: clamp(40px, 12vw, 180px); padding-left: clamp(40px, 12vw, 180px); }
+.phone--desktop .discover-card__quote p { max-width: 900px; font-size: clamp(35px, 4vw, 64px); }
 
 .mode-tabs {
   position: absolute;
@@ -359,7 +358,7 @@ body { font-family: 'Pretendard', sans-serif; }
 .type-menu__toggle svg { width: 17px; height: 17px; }
 
 .type-menu__panel {
-  width: 190px;
+  width: 220px;
   position: absolute;
   top: 41px;
   right: 0;
@@ -379,6 +378,15 @@ body { font-family: 'Pretendard', sans-serif; }
   padding: 5px 3px;
   font-family: 'Pretendard', sans-serif;
 }
+
+.view-mode-setting { min-width: 0; margin: 0; padding: 5px 3px 10px; border: 0; border-bottom: 1px solid rgba(15, 15, 15, .08); font-family: 'Pretendard', sans-serif; }
+.view-mode-setting > legend { display: block; width: 100%; margin-bottom: 7px; padding: 0; color: #777; font-size: 9px; font-weight: 650; }
+.view-mode-setting > div { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.view-mode-setting button { height: 32px; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 0 7px; border: 1px solid #dedede; border-radius: 10px; background: #f7f7f5; color: #777; font-size: 10px; font-weight: 650; }
+.view-mode-setting button svg { width: 14px; height: 14px; }
+.view-mode-setting button.view-mode-setting__active { border-color: #171717; background: #171717; color: #fff; }
+.genre-menu > .view-mode-setting { margin-bottom: 14px; }
+.type-menu__panel > .motion-setting { padding-top: 10px; }
 
 .motion-setting > div { display: flex; flex-direction: column; gap: 2px; }
 .motion-setting strong { color: #333; font-size: 11px; font-weight: 650; }

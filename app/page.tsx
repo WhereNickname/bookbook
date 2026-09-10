@@ -1,6 +1,6 @@
 /*
  * FILE ROLE: 북북의 탐색, 책 소개, 샘플 읽기 화면을 조합하고 화면 간 상태를 이어준다.
- * OWNS: 현재 선택한 책, 탐색 장르와 복귀 위치, 리더 표시 모드와 화면 전환 상태.
+ * OWNS: 현재 선택한 책, 탐색 장르와 복귀 위치, 리더 표시 모드와 기기 보기 모드, 화면 전환 상태.
  * USES: book-data의 편집 콘텐츠, book-catalog의 서지 정보와 공통 PhoneFrame UI.
  * MUST NOT: 책 요약 원문을 직접 소유하거나 서버 저장과 계정 동기화를 수행한다.
  */
@@ -18,7 +18,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { ArrowLeft, ArrowRight, Bookmark, BookOpen, Clock3, House, Menu, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bookmark, BookOpen, Clock3, House, Menu, Monitor, Smartphone, X } from 'lucide-react';
 import { getBookContent } from './book-data';
 import { FEED_BOOKS, GENRES, type FeedBook, type Genre } from './book-catalog';
 import './book-covers.css';
@@ -32,6 +32,7 @@ type ReadingLine = {
 
 type GestureStart = { x: number; y: number; moved: boolean };
 type ReadingMode = 'plain' | 'ebook';
+type ViewMode = 'phone' | 'desktop';
 
 function getActiveLineSize(text: string) {
   const characterCount = text.replace(/\s/g, '').length;
@@ -55,19 +56,22 @@ export default function Home() {
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(true);
   const [selectedGenre, setSelectedGenre] = useState<Genre>('전체');
   const [discoverScrollTop, setDiscoverScrollTop] = useState(0);
+  const [viewMode, setViewMode] = useState<ViewMode>('phone');
 
-  if (isReading && selectedBook) return <Reader book={selectedBook} animationsEnabled={animationsEnabled} onAnimationsChange={setAnimationsEnabled} onExit={() => { setIsReading(false); setSelectedBook(null); }} />;
+  if (isReading && selectedBook) return <Reader book={selectedBook} animationsEnabled={animationsEnabled} onAnimationsChange={setAnimationsEnabled} viewMode={viewMode} onViewModeChange={setViewMode} onExit={() => { setIsReading(false); setSelectedBook(null); }} />;
   if (selectedBook) {
-    return <BookEntry book={selectedBook} animationsEnabled={animationsEnabled} onBack={() => setSelectedBook(null)} onStartReading={() => setIsReading(true)} />;
+    return <BookEntry book={selectedBook} animationsEnabled={animationsEnabled} viewMode={viewMode} onBack={() => setSelectedBook(null)} onStartReading={() => setIsReading(true)} />;
   }
   return (
     <DiscoverFeed
       animationsEnabled={animationsEnabled}
       isWelcomeOpen={isWelcomeOpen}
       selectedGenre={selectedGenre}
+      viewMode={viewMode}
       initialScrollTop={discoverScrollTop}
       onCloseWelcome={() => setIsWelcomeOpen(false)}
       onGenreChange={setSelectedGenre}
+      onViewModeChange={setViewMode}
       onSelectBook={(book, scrollTop) => {
         setDiscoverScrollTop(scrollTop);
         setSelectedBook(book);
@@ -82,12 +86,17 @@ type PhoneFrameProps = Omit<HTMLAttributes<HTMLElement>, 'children' | 'className
   phoneRef?: Ref<HTMLElement>;
   ariaLabel: string;
   note: string;
+  viewMode: ViewMode;
 };
 
-function PhoneFrame({ children, className = '', phoneRef, ariaLabel, note, style, ...phoneProps }: PhoneFrameProps) {
+function PhoneFrame({ children, className = '', phoneRef, ariaLabel, note, viewMode, style, ...phoneProps }: PhoneFrameProps) {
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
+    if (viewMode === 'desktop') {
+      return;
+    }
+
     const fitPhone = () => {
       const sideGap = window.innerWidth <= 520 ? 12 : 32;
       const verticalGap = window.innerWidth <= 520 ? 12 : 78;
@@ -101,16 +110,18 @@ function PhoneFrame({ children, className = '', phoneRef, ariaLabel, note, style
     fitPhone();
     window.addEventListener('resize', fitPhone);
     return () => window.removeEventListener('resize', fitPhone);
-  }, []);
+  }, [viewMode]);
+
+  const isDesktop = viewMode === 'desktop';
 
   return (
-    <main className="prototype-stage">
-      <div className="phone-viewport" style={{ width: 390 * scale, height: 844 * scale }}>
+    <main className={`prototype-stage ${isDesktop ? 'prototype-stage--desktop' : ''}`}>
+      <div className={`phone-viewport ${isDesktop ? 'phone-viewport--desktop' : ''}`} style={isDesktop ? undefined : { width: 390 * scale, height: 844 * scale }}>
         <section
           {...phoneProps}
           ref={phoneRef}
-          className={`phone ${className}`.trim()}
-          style={{ ...style, transform: `scale(${scale})` }}
+          className={`phone ${isDesktop ? 'phone--desktop' : ''} ${className}`.trim()}
+          style={{ ...style, transform: isDesktop ? 'none' : `scale(${scale})` }}
           aria-label={ariaLabel}
         >
           <span className="speaker" aria-hidden="true" />
@@ -122,7 +133,23 @@ function PhoneFrame({ children, className = '', phoneRef, ariaLabel, note, style
   );
 }
 
-function Reader({ book, animationsEnabled, onAnimationsChange, onExit }: { book: FeedBook; animationsEnabled: boolean; onAnimationsChange: (enabled: boolean) => void; onExit: () => void }) {
+function ViewModeSetting({ viewMode, onChange }: { viewMode: ViewMode; onChange: (mode: ViewMode) => void }) {
+  return (
+    <fieldset className="view-mode-setting">
+      <legend>화면 보기</legend>
+      <div>
+        <button type="button" className={viewMode === 'phone' ? 'view-mode-setting__active' : ''} aria-pressed={viewMode === 'phone'} onClick={() => onChange('phone')}>
+          <Smartphone aria-hidden="true" /> 핸드폰
+        </button>
+        <button type="button" className={viewMode === 'desktop' ? 'view-mode-setting__active' : ''} aria-pressed={viewMode === 'desktop'} onClick={() => onChange('desktop')}>
+          <Monitor aria-hidden="true" /> 전체화면
+        </button>
+      </div>
+    </fieldset>
+  );
+}
+
+function Reader({ book, animationsEnabled, onAnimationsChange, viewMode, onViewModeChange, onExit }: { book: FeedBook; animationsEnabled: boolean; onAnimationsChange: (enabled: boolean) => void; viewMode: ViewMode; onViewModeChange: (mode: ViewMode) => void; onExit: () => void }) {
   const content = getBookContent(book.title);
   const teaserSentences = content.prologue;
   const bookSentences = content.sentences;
@@ -310,9 +337,10 @@ function Reader({ book, animationsEnabled, onAnimationsChange, onExit }: { book:
 
   return (
     <PhoneFrame
-          phoneRef={phoneRef}
-          className={`phone--${mode} ${animationsEnabled ? 'phone--screen-enter' : 'phone--no-motion'}`}
-          ariaLabel={`북북 ${mode === 'plain' ? '일반' : '전자책'} 읽기 화면`}
+      viewMode={viewMode}
+      phoneRef={phoneRef}
+      className={`phone--${mode} ${animationsEnabled ? 'phone--screen-enter' : 'phone--no-motion'}`}
+      ariaLabel={`북북 ${mode === 'plain' ? '일반' : '전자책'} 읽기 화면`}
           note="세로로 문장 이동 · 가로로 일반/전자책 전환"
           tabIndex={0}
           onPointerDown={(event) => {
@@ -377,6 +405,7 @@ function Reader({ book, animationsEnabled, onAnimationsChange, onExit }: { book:
               </button>
               {isSettingsOpen && (
                 <div className="type-menu__panel" role="menu" aria-label="화면 설정">
+                  <ViewModeSetting viewMode={viewMode} onChange={onViewModeChange} />
                   <div className="motion-setting">
                     <div>
                       <strong>GUI 애니메이션</strong>
@@ -533,11 +562,13 @@ function Reader({ book, animationsEnabled, onAnimationsChange, onExit }: { book:
 function BookEntry({
   book,
   animationsEnabled,
+  viewMode,
   onBack,
   onStartReading,
 }: {
   book: FeedBook;
   animationsEnabled: boolean;
+  viewMode: ViewMode;
   onBack: () => void;
   onStartReading: () => void;
 }) {
@@ -600,10 +631,15 @@ function BookEntry({
   };
 
   return (
-    <PhoneFrame className={`phone--entry ${animationsEnabled ? 'phone--screen-enter' : 'phone--no-motion'}`} ariaLabel={`${book.title} 책 소개`} note="책의 분위기를 보고 1분 미리보기를 시작해봐">
+    <PhoneFrame
+      viewMode={viewMode}
+      className={`phone--entry ${animationsEnabled ? 'phone--screen-enter' : 'phone--no-motion'}`}
+      ariaLabel={`${book.title} 책 소개`}
+      note="책의 분위기를 보고 1분 미리보기를 시작해봐"
+      style={{ '--card-color': book.color, '--card-foreground': book.foreground } as CSSProperties}
+    >
       <div
         className="book-entry"
-        style={{ '--card-color': book.color, '--card-foreground': book.foreground } as CSSProperties}
       >
         <header className="book-entry__header">
           <button type="button" onClick={onBack} aria-label="탐색으로 돌아가기"><ArrowLeft aria-hidden="true" /></button>
@@ -677,17 +713,21 @@ function DiscoverFeed({
   animationsEnabled,
   isWelcomeOpen,
   selectedGenre,
+  viewMode,
   initialScrollTop,
   onCloseWelcome,
   onGenreChange,
+  onViewModeChange,
   onSelectBook,
 }: {
   animationsEnabled: boolean;
   isWelcomeOpen: boolean;
   selectedGenre: Genre;
+  viewMode: ViewMode;
   initialScrollTop: number;
   onCloseWelcome: () => void;
   onGenreChange: (genre: Genre) => void;
+  onViewModeChange: (mode: ViewMode) => void;
   onSelectBook: (book: FeedBook, scrollTop: number) => void;
 }) {
   const [isGenreMenuOpen, setIsGenreMenuOpen] = useState(false);
@@ -715,6 +755,7 @@ function DiscoverFeed({
 
   return (
     <PhoneFrame
+      viewMode={viewMode}
       className={`phone--discover ${animationsEnabled ? 'phone--screen-enter' : 'phone--no-motion'}`}
       ariaLabel="스북 책 탐색 화면"
       note="책의 첫 문장을 따라 천천히 내려가봐"
@@ -732,6 +773,7 @@ function DiscoverFeed({
         </header>
         {isGenreMenuOpen && (
           <div className="genre-menu" role="menu" aria-label="책 장르 선택">
+            <ViewModeSetting viewMode={viewMode} onChange={onViewModeChange} />
             <p>어떤 책을 볼까?</p>
             <div>
               {GENRES.map((genre) => (
