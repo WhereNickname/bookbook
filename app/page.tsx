@@ -577,9 +577,22 @@ function BookEntry({
 }
 
 function BookCoverArtwork({ book }: { book: FeedBook }) {
+  const [hasCoverError, setHasCoverError] = useState(false);
+
   return (
     <div className={`book-entry__cover cover--${book.coverStyle} ${book.coverPattern ? `cover-pattern--${book.coverPattern}` : ''}`}
       style={{ '--cover-color': book.color, '--cover-ink': book.foreground } as CSSProperties} aria-label={`${book.title} 표지`}>
+      {book.coverUrl && !hasCoverError && (
+        // oxlint-disable-next-line next/no-img-element -- 정적 Daum 책 외부 URL을 쓰는 Vite MVP다.
+        <img
+          className="book-entry__cover-image"
+          src={book.coverUrl}
+          alt=""
+          aria-hidden="true"
+          referrerPolicy="no-referrer"
+          onError={() => setHasCoverError(true)}
+        />
+      )}
       <div className="cover-art" aria-hidden="true">
         <b>{book.coverMark}</b>
         <span>{book.coverData}</span>

@@ -1,15 +1,17 @@
 /*
  * FILE ROLE: 탐색 피드의 서지 정보와 표지 구성을 제공한다.
  * OWNS: 책 목록 순서, 장르, 소개 문구, 표지 색상과 상징.
- * USES: book-data에서 가져오는 프롤로그.
+ * USES: book-data의 프롤로그와 개발 단계에서 저장한 Kakao Daum 책 표지 매핑.
  * MUST NOT: 본문 요약이나 읽기 상태를 중복 소유한다.
  */
 import { getBookContent } from './book-data';
+import { BOOK_COVERS } from './book-covers.generated';
 export type Genre = '전체' | '문학' | '비문학' | '고전문학' | '로맨스' | '한국' | '해외' | '영어원문' | '자기개발';
 export type FeedBook = {
   title: string; author: string; category: string; genres: Genre[];
   coverStyle: string; coverMark: string; coverData: string;
   quote: string; color: string; foreground: string; description: string;
+  isbn?: string; coverUrl?: string;
   coverPattern?: 'wave' | 'orbit' | 'grid' | 'split';
 };
 const ORIGINAL_BOOKS: FeedBook[] = [
@@ -61,6 +63,7 @@ const ADDED_BOOKS: FeedBook[] = [
 const originalNonfiction = new Set(['코스모스', '국부론', '사피엔스']);
 export const FEED_BOOKS: FeedBook[] = [...ORIGINAL_BOOKS, ...ADDED_BOOKS].map((book) => ({
   ...book,
+  ...BOOK_COVERS[book.title],
   genres: [...new Set<Genre>([originalNonfiction.has(book.title) ? '비문학' : book.genres.includes('비문학') ? '비문학' : '문학', ...book.genres])],
   quote: getBookContent(book.title).prologue.join('\n'),
 }));

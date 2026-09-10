@@ -155,6 +155,7 @@ body { font-family: 'Pretendard', sans-serif; }
 .book-entry__header svg { width: 18px; height: 18px; }
 .book-entry__hero { height: 57%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 50px; }
 .book-entry__cover { width: 144px; height: 198px; position: relative; overflow: hidden; color: #111; box-shadow: 12px 16px 28px rgba(0, 0, 0, .22); transform: rotate(-2deg); }
+.book-entry__cover-image { position: absolute; z-index: 4; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #eee; }
 .cover-art { position: absolute; inset: 0; overflow: hidden; }
 .cover-label { position: absolute; z-index: 2; right: 13px; bottom: 13px; left: 13px; display: flex; flex-direction: column; gap: 4px; }
 .cover-label span { font-size: 7px; font-weight: 650; letter-spacing: .03em; opacity: .72; }
@@ -233,6 +234,16 @@ body { font-family: 'Pretendard', sans-serif; }
   --counter-font: 'Bookk Gothic', sans-serif;
   --support-font: 'Pretendard', sans-serif;
   --support-weight: 400;
+}
+
+.phone::after {
+  content: '';
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  border: 2px solid #0a0a0a;
+  border-radius: 40px;
+  pointer-events: none;
 }
 
 .phone--discover {
