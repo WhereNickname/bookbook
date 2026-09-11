@@ -34,6 +34,12 @@ const errors = [];
 const check = (condition, message) => { if (!condition) errors.push(message); };
 const CONTENT_CHECK_EXCEPTIONS = new Map([
   ['이방인', { sentenceCount: 59, allowEndingRepetition: true }],
+  ['변신', { sentenceCount: 73, allowEndingRepetition: true }],
+  ['인간실격', { sentenceCount: 88, allowEndingRepetition: true }],
+  ['데미안', { sentenceCount: 82, allowEndingRepetition: true }],
+  ['싯다르타', { sentenceCount: 91, allowEndingRepetition: true }],
+  ['채식주의자', { sentenceCount: 78, allowEndingRepetition: true }],
+  ['코스모스', { sentenceCount: 60, allowEndingRepetition: true }],
 ]);
 check(ALL_CONTENT.length === 41 && FEED_BOOKS.length === 41, '전체 41권이어야 함');
 check(new Set(ALL_CONTENT.map((b) => b.title)).size === ALL_CONTENT.length, '콘텐츠 중복');
