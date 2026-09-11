@@ -33,6 +33,7 @@ type ReadingLine = {
 type GestureStart = { x: number; y: number; moved: boolean };
 type ReadingMode = 'plain' | 'ebook';
 type ViewMode = 'phone' | 'desktop';
+type ReadingDirection = 'forward' | 'backward';
 
 function getActiveLineSize(text: string) {
   const characterCount = text.replace(/\s/g, '').length;
@@ -173,6 +174,7 @@ function Reader({ book, animationsEnabled, onAnimationsChange, viewMode, onViewM
   );
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const [readingDirection, setReadingDirection] = useState<ReadingDirection>('forward');
   const [mode, setMode] = useState<ReadingMode>('plain');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -203,6 +205,7 @@ function Reader({ book, animationsEnabled, onAnimationsChange, viewMode, onViewM
     const target = Math.max(0, Math.min(lines.length - 1, current + amount));
     if (target === current) return;
 
+    setReadingDirection(target > current ? 'forward' : 'backward');
     activeIndexRef.current = target;
     setActiveIndex(target);
     setHasReachedEnd(target === lines.length - 1);
@@ -214,6 +217,7 @@ function Reader({ book, animationsEnabled, onAnimationsChange, viewMode, onViewM
 
     // 문장 목록을 눌렀을 때는 중간 문장들을 훑지 않고 바로 해당 위치로 보낸다.
     hasPositionedRail.current = false;
+    setReadingDirection(target > activeIndexRef.current ? 'forward' : 'backward');
     activeIndexRef.current = target;
     setActiveIndex(target);
     setHasReachedEnd(target === lines.length - 1);
@@ -243,7 +247,7 @@ function Reader({ book, animationsEnabled, onAnimationsChange, viewMode, onViewM
 
       const startTop = rail.scrollTop;
       const distance = targetTop - startTop;
-      const duration = 460;
+      const duration = 480;
       const startedAt = window.performance.now();
 
       const animate = (now: number) => {
@@ -489,8 +493,10 @@ function Reader({ book, animationsEnabled, onAnimationsChange, viewMode, onViewM
                         jumpTo(index);
                       }}
                     >
-                      {isActive && <span className="counter">{counter}</span>}
-                      <p>{line.text}</p>
+                      <span className={`reading-line__focus reading-line__focus--${readingDirection}`}>
+                        {isActive && <span className="counter">{counter}</span>}
+                        <span className="reading-line__text">{line.text}</span>
+                      </span>
                     </button>
                   );
                 })}
@@ -572,54 +578,8 @@ function BookEntry({
   onBack: () => void;
   onStartReading: () => void;
 }) {
-  const coverUrls = book.coverUrls?.length ? book.coverUrls : book.coverUrl ? [book.coverUrl] : [];
-  const initialCoverIndex = Math.min(1, Math.max(coverUrls.length - 1, 0));
   const [savedBooks, setSavedBooks] = useState<Set<string>>(() => new Set());
-  const [activeCoverIndex, setActiveCoverIndex] = useState(initialCoverIndex);
-  const coverRailRef = useRef<HTMLDivElement>(null);
-  const coverScrollTimerRef = useRef<number | null>(null);
   const saved = savedBooks.has(book.title);
-
-  const selectCenteredCover = useCallback(() => {
-    const rail = coverRailRef.current;
-    if (!rail) return;
-
-    const railCenter = rail.scrollLeft + rail.clientWidth / 2;
-    const slides = Array.from(rail.querySelectorAll<HTMLElement>('[data-cover-index]'));
-    const centeredSlide = slides.reduce((closest, slide) => {
-      const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
-      const closestCenter = closest.offsetLeft + closest.offsetWidth / 2;
-      return Math.abs(slideCenter - railCenter) < Math.abs(closestCenter - railCenter) ? slide : closest;
-    }, slides[0]);
-    const centeredIndex = Number(centeredSlide?.dataset.coverIndex);
-    if (Number.isInteger(centeredIndex)) setActiveCoverIndex(centeredIndex);
-  }, []);
-
-  useEffect(() => {
-    coverRailRef.current?.querySelector<HTMLElement>(`[data-cover-index="${initialCoverIndex}"]`)?.scrollIntoView({
-      behavior: 'instant',
-      block: 'nearest',
-      inline: 'center',
-    });
-  }, [initialCoverIndex]);
-
-  useEffect(() => () => {
-    if (coverScrollTimerRef.current !== null) window.clearTimeout(coverScrollTimerRef.current);
-  }, []);
-
-  const handleCoverScroll = () => {
-    if (coverScrollTimerRef.current !== null) window.clearTimeout(coverScrollTimerRef.current);
-    coverScrollTimerRef.current = window.setTimeout(selectCenteredCover, 120);
-  };
-
-  const handleCoverClick = (index: number) => {
-    setActiveCoverIndex(index);
-    coverRailRef.current?.querySelector<HTMLElement>(`[data-cover-index="${index}"]`)?.scrollIntoView({
-      behavior: animationsEnabled ? 'smooth' : 'instant',
-      block: 'nearest',
-      inline: 'center',
-    });
-  };
 
   const toggleSaved = () => {
     setSavedBooks((current) => {
@@ -649,20 +609,10 @@ function BookEntry({
           </button>
         </header>
         <section className="book-entry__hero">
-          <div className="book-entry__cover-rail" ref={coverRailRef} onScroll={handleCoverScroll} aria-label={`${book.title} 판본 표지 목록`}>
-            {coverUrls.map((coverUrl, index) => (
-              <button
-                type="button"
-                className={`book-entry__cover-slide ${index === activeCoverIndex ? 'book-entry__cover-slide--active' : ''}`}
-                data-cover-index={index}
-                key={coverUrl}
-                onClick={() => handleCoverClick(index)}
-                aria-label={`${book.title} 표지 ${index + 1}`}
-                aria-current={index === activeCoverIndex ? 'true' : undefined}
-              >
-                <BookCoverArtwork book={book} coverUrl={coverUrl} />
-              </button>
-            ))}
+          <div className="book-entry__cover-rail" aria-label={`${book.title} 대표 표지`}>
+            <div className="book-entry__cover-slide book-entry__cover-slide--active">
+              <BookCoverArtwork book={book} />
+            </div>
           </div>
           <p className="book-entry__quote" aria-live="polite">{book.quote}</p>
         </section>

@@ -1,6 +1,6 @@
 /*
  * FILE ROLE: 하드코딩된 카탈로그를 Daum 책 검색에서 한 번 조회해 정적 표지 매핑을 생성한다.
- * OWNS: 제목과 저자 기준 판본 검색, 중복 제거, book-covers.generated.ts 출력.
+ * OWNS: 제목과 저자 기준 대표 판본 검색, 중복 제거, book-covers.generated.ts 출력.
  * USES: KAKAO_REST_API_KEY 환경변수와 Kakao Daum 책 검색 REST API.
  * MUST NOT: 앱 런타임에서 실행되거나 REST API 키를 출력·저장한다.
  */
@@ -58,7 +58,7 @@ for (const book of books) {
   });
   const titleCandidates = candidates.filter((item) => normalize(item.title ?? '').includes(title));
   const orderedCandidates = [...matchingCandidates, ...titleCandidates];
-  const uniqueCandidates = [...new Map(orderedCandidates.map((item) => [item.thumbnail, item])).values()].slice(0, 3);
+  const uniqueCandidates = [...new Map(orderedCandidates.map((item) => [item.thumbnail, item])).values()].slice(0, 1);
 
   if (uniqueCandidates.length === 0) {
     console.warn(`표지 없음: ${book.title}`);
