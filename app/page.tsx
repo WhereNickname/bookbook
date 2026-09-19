@@ -14,6 +14,7 @@ import {
   type Ref,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -90,24 +91,30 @@ type PhoneFrameProps = Omit<HTMLAttributes<HTMLElement>, 'children' | 'className
 function PhoneFrame({ children, className = '', phoneRef, ariaLabel, note, viewMode, style, ...phoneProps }: PhoneFrameProps) {
   const [scale, setScale] = useState(1);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (viewMode === 'desktop') {
       return;
     }
 
     const fitPhone = () => {
-      const sideGap = window.innerWidth <= 520 ? 12 : 32;
-      const verticalGap = window.innerWidth <= 520 ? 12 : 78;
+      const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const sideGap = viewportWidth <= 520 ? 12 : 32;
+      const verticalGap = viewportWidth <= 520 ? 12 : 78;
       setScale(Math.min(
         1,
-        Math.max(0.1, (window.innerWidth - sideGap) / 390),
-        Math.max(0.1, (window.innerHeight - verticalGap) / 844),
+        Math.max(0.1, (viewportWidth - sideGap) / 390),
+        Math.max(0.1, (viewportHeight - verticalGap) / 844),
       ));
     };
 
     fitPhone();
     window.addEventListener('resize', fitPhone);
-    return () => window.removeEventListener('resize', fitPhone);
+    window.visualViewport?.addEventListener('resize', fitPhone);
+    return () => {
+      window.removeEventListener('resize', fitPhone);
+      window.visualViewport?.removeEventListener('resize', fitPhone);
+    };
   }, [viewMode]);
 
   const isDesktop = viewMode === 'desktop';
@@ -174,6 +181,10 @@ function Reader({ book, animationsEnabled, onAnimationsChange, viewMode, onViewM
   const [readingDirection, setReadingDirection] = useState<ReadingDirection>('forward');
   const [mode, setMode] = useState<ReadingMode>('plain');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const changeViewMode = (mode: ViewMode) => {
+    setIsSettingsOpen(false);
+    onViewModeChange(mode);
+  };
   const [saved, setSaved] = useState(false);
   const [hasReachedEnd, setHasReachedEnd] = useState(false);
   const phoneRef = useRef<HTMLElement>(null);
@@ -406,7 +417,7 @@ function Reader({ book, animationsEnabled, onAnimationsChange, viewMode, onViewM
               </button>
               {isSettingsOpen && (
                 <div className="type-menu__panel" role="menu" aria-label="화면 설정">
-                  <ViewModeSetting viewMode={viewMode} onChange={onViewModeChange} />
+                  <ViewModeSetting viewMode={viewMode} onChange={changeViewMode} />
                   <div className="motion-setting">
                     <div>
                       <strong>GUI 애니메이션</strong>
@@ -688,6 +699,11 @@ function DiscoverFeed({
     window.requestAnimationFrame(() => feedRef.current?.scrollTo({ top: 0 }));
   };
 
+  const changeViewMode = (mode: ViewMode) => {
+    setIsGenreMenuOpen(false);
+    onViewModeChange(mode);
+  };
+
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       if (feedRef.current) feedRef.current.scrollTop = initialScrollTop;
@@ -719,7 +735,7 @@ function DiscoverFeed({
         </header>
         {isGenreMenuOpen && (
           <div className="genre-menu" role="menu" aria-label="책 장르 선택">
-            <ViewModeSetting viewMode={viewMode} onChange={onViewModeChange} />
+            <ViewModeSetting viewMode={viewMode} onChange={changeViewMode} />
             <p>어떤 책을 볼까?</p>
             <div>
               {GENRES.map((genre) => (
