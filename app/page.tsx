@@ -870,6 +870,7 @@ function DiscoverFeed({
               <button type="button" onClick={() => selectGenre('전체')}>전체 책 보기</button>
             </div>
           )}
+          <div className="discover-feed__future-action-space" aria-hidden="true" />
         </div>
     </PhoneFrame>
   );
