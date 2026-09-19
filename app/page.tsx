@@ -36,6 +36,73 @@ type ReadingMode = 'plain' | 'ebook';
 type ViewMode = 'phone' | 'desktop';
 type ReadingDirection = 'forward' | 'backward';
 
+
+type DiscoveryPair = {
+  left: string;
+  right: string;
+  prompt: string;
+};
+
+type DiscoveryPairGroup = {
+  books: FeedBook[];
+  prompt: string;
+};
+
+const EDITORIAL_PAIRS: DiscoveryPair[] = [
+  { left: '데미안', right: '인간실격', prompt: '나를 찾아 나설까, 사람들 속에 나를 숨길까' },
+  { left: '이방인', right: '죽음의 수용소에서', prompt: '의미가 없는 세계와, 의미를 끝까지 붙드는 사람' },
+  { left: '싯다르타', right: '차라투스트라는 이렇게 말했다', prompt: '안으로 깊어지는 길과, 자신을 넘어서는 길' },
+  { left: '채식주의자', right: '카네기 인간관계론', prompt: '세상과 거리를 두기와, 사람에게 가까이 가기' },
+  { left: '코스모스', right: '사피엔스', prompt: '우주에서 인간을 볼까, 인간에서 세계를 볼까' },
+  { left: '날개', right: '수레바퀴 아래서', prompt: '밖으로 날아가려는 사람과, 기대 아래 눌리는 사람' },
+  { left: '동물농장', right: '군주론', prompt: '권력이 망가지는 과정과, 권력을 지키는 방법' },
+  { left: '1984', right: '멋진 신세계', prompt: '두려움으로 통제할까, 행복으로 통제할까' },
+  { left: '안나 카레니나', right: '오만과 편견', prompt: '사랑이 사회와 충돌할 때, 관계는 어디로 갈까' },
+  { left: '국부론', right: '공정하다는 착각', prompt: '부가 만들어지는 원리와, 성공이 정당한가라는 질문' },
+  { left: '급류', right: '설국', prompt: '휩쓸리는 마음과, 얼어붙은 거리 사이' },
+  { left: '구의 증명', right: '브람스를 좋아하세요...', prompt: '남겨진 사랑과, 다시 선택해야 하는 사랑' },
+  { left: '아토믹 해빗츠', right: '역행자', prompt: '작게 반복할까, 익숙한 방향부터 뒤집을까' },
+  { left: '설득의 심리학', right: '어린 왕자', prompt: '사람을 움직이는 법과, 사람을 이해하는 법' },
+  { left: '노인과 바다', right: '호밀밭의 파수꾼', prompt: '끝까지 버티는 사람과, 벗어나려는 사람' },
+  { left: '위대한 개츠비', right: '젊은 베르테르의 슬픔', prompt: '지나간 사랑을 기다릴까, 사랑에 온몸을 던질까' },
+  { left: '첫사랑', right: '폭풍의 언덕', prompt: '처음 스친 사랑과, 세대를 붙드는 사랑' },
+  { left: '눈먼 자들의 도시', right: '페스트', prompt: '무너지는 도시와, 버티는 도시를 바라보기' },
+  { left: '변신', right: '프랑켄슈타인', prompt: '괴물이 되어버린 사람과, 괴물을 만들어버린 사람' },
+  { left: '지킬 박사와 하이드 씨', right: '도리언 그레이의 초상', prompt: '갈라진 내면과, 감춰진 얼굴' },
+];
+
+function getDiscoveryLine(book: FeedBook) {
+  return book.quote.split('\n').find((line) => line.trim().length > 0) ?? book.description;
+}
+
+function buildDiscoveryPairs(books: FeedBook[], useEditorialOrder: boolean): DiscoveryPairGroup[] {
+  const byTitle = new Map(books.map((book) => [book.title, book]));
+  const used = new Set<string>();
+  const groups: DiscoveryPairGroup[] = [];
+
+  if (useEditorialOrder) {
+    EDITORIAL_PAIRS.forEach((pair) => {
+      const left = byTitle.get(pair.left);
+      const right = byTitle.get(pair.right);
+      if (!left || !right) return;
+      used.add(left.title);
+      used.add(right.title);
+      groups.push({ books: [left, right], prompt: pair.prompt });
+    });
+  }
+
+  const remaining = books.filter((book) => !used.has(book.title));
+  for (let index = 0; index < remaining.length; index += 2) {
+    const pairBooks = remaining.slice(index, index + 2);
+    groups.push({
+      books: pairBooks,
+      prompt: pairBooks.length === 2 ? '같은 서가에서 전혀 다른 방향을 골라봐' : '마지막 한 권은 어떤 문장으로 시작할까',
+    });
+  }
+
+  return groups;
+}
+
 function getActiveLineSize(text: string) {
   const characterCount = text.replace(/\s/g, '').length;
   if (characterCount > 30) return 'reading-line--dense';
@@ -692,6 +759,7 @@ function DiscoverFeed({
   const visibleBooks = selectedGenre === '전체'
     ? FEED_BOOKS
     : FEED_BOOKS.filter((book) => book.genres.includes(selectedGenre));
+  const discoveryPairs = buildDiscoveryPairs(visibleBooks, selectedGenre === '전체');
 
   const selectGenre = (genre: Genre) => {
     onGenreChange(genre);
@@ -761,24 +829,38 @@ function DiscoverFeed({
             </div>
             <p>{visibleBooks.length}권</p>
           </div>
-          <div className="discover-grid">
-          {visibleBooks.map((book, index) => (
-            <article
-              key={book.title}
-              className="discover-card"
-              style={{ '--card-color': book.color, '--card-foreground': book.foreground } as CSSProperties}
-            >
-              <button type="button" className="discover-card__cover" onClick={() => selectBook(book)} aria-label={`${book.title} 살펴보기`}>
-                <BookCoverArtwork book={book} />
-                <span>{String(index + 1).padStart(2, '0')}</span>
-              </button>
-              <button type="button" className="discover-card__info" onClick={() => selectBook(book)}>
-                <strong>{book.title}</strong>
-                <span>{book.author}</span>
-                <small>{book.category}</small>
-              </button>
-            </article>
-          ))}
+          <div className="discover-pairs">
+            {discoveryPairs.map((pair, pairIndex) => (
+              <section
+                className={`discover-pair ${pair.books.length === 1 ? 'discover-pair--single' : ''}`}
+                key={pair.books.map((book) => book.title).join('::')}
+                aria-label={pair.prompt}
+              >
+                <header className="discover-pair__header">
+                  <span>{pairIndex === 0 && selectedGenre === '전체' ? '오늘의 두 갈래' : '같은 페이지, 다른 방향'}</span>
+                  <strong>{pair.prompt}</strong>
+                </header>
+                <div className="discover-pair__books">
+                  {pair.books.map((book, bookIndex) => (
+                    <article
+                      key={book.title}
+                      className="discover-card"
+                      style={{ '--card-color': book.color, '--card-foreground': book.foreground } as CSSProperties}
+                    >
+                      <button type="button" className="discover-card__cover" onClick={() => selectBook(book)} aria-label={`${book.title} 살펴보기`}>
+                        <BookCoverArtwork book={book} />
+                        {pair.books.length === 2 && <span>{bookIndex === 0 ? 'A' : 'B'}</span>}
+                      </button>
+                      <button type="button" className="discover-card__info" onClick={() => selectBook(book)}>
+                        <strong>{book.title}</strong>
+                        <span>{book.author}</span>
+                        <p>{getDiscoveryLine(book)}</p>
+                      </button>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ))}
           </div>
           {visibleBooks.length === 0 && (
             <div className="discover-empty">

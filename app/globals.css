@@ -112,11 +112,54 @@ body { font-family: 'Pretendard', sans-serif; }
 .discover-feed__intro strong { font-size: 26px; line-height: 1.08; letter-spacing: -.075em; }
 .discover-feed__intro p { margin: 0 0 2px; color: #999; font-size: 10px; font-weight: 650; }
 
-.discover-grid {
+.discover-pairs {
+  padding: 0 14px 44px;
+}
+
+.discover-pair {
+  padding: 23px 0 27px;
+  border-top: 1px solid #ecece9;
+}
+
+.discover-pair:first-child {
+  padding-top: 6px;
+  border-top: 0;
+}
+
+.discover-pair__header {
+  margin-bottom: 13px;
+}
+
+.discover-pair__header span {
+  display: block;
+  margin-bottom: 5px;
+  color: #00a934;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+}
+
+.discover-pair__header strong {
+  display: block;
+  max-width: 310px;
+  color: #171717;
+  font-family: 'Bookk Myungjo', serif;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.38;
+  letter-spacing: -.055em;
+  word-break: keep-all;
+}
+
+.discover-pair__books {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px 7px;
-  padding: 0 10px 40px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.discover-pair--single .discover-pair__books {
+  grid-template-columns: minmax(0, 1fr);
+  width: calc(50% - 5px);
 }
 
 .discover-card {
@@ -134,12 +177,43 @@ body { font-family: 'Pretendard', sans-serif; }
   text-align: left;
   cursor: pointer;
 }
-.discover-card__cover .book-entry__cover { width: 100%; height: auto; aspect-ratio: 144 / 198; border-radius: 0; box-shadow: 0 5px 14px rgba(25, 25, 20, .12); transform: none; }
-.discover-card__cover > span { position: absolute; right: 5px; bottom: 5px; min-width: 21px; padding: 3px 4px; border-radius: 0; background: rgba(0, 0, 0, .72); color: #fff; font-size: 7px; font-weight: 750; line-height: 1; text-align: center; }
-.discover-card__info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; padding: 6px 1px 0; border: 0; background: transparent; color: #181818; text-align: left; }
-.discover-card__info strong { overflow: hidden; width: 100%; font-size: 12px; line-height: 1.2; letter-spacing: -.045em; text-overflow: ellipsis; white-space: nowrap; }
+.discover-card__cover .book-entry__cover { width: 100%; height: auto; aspect-ratio: 144 / 198; border-radius: 0; box-shadow: 0 7px 18px rgba(25, 25, 20, .13); transform: none; }
+.discover-card__cover > span {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .42);
+  border-radius: 50%;
+  background: rgba(17, 17, 17, .74);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1;
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+.discover-card__info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; padding: 8px 1px 0; border: 0; background: transparent; color: #181818; text-align: left; }
+.discover-card__info strong { overflow: hidden; width: 100%; font-size: 13px; line-height: 1.2; letter-spacing: -.045em; text-overflow: ellipsis; white-space: nowrap; }
 .discover-card__info span { overflow: hidden; width: 100%; margin-top: 3px; color: #777; font-size: 10px; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
-.discover-card__info small { display: none; }
+.discover-card__info p {
+  display: -webkit-box;
+  overflow: hidden;
+  width: 100%;
+  margin: 8px 0 0;
+  color: #4b4b4b;
+  font-family: 'Bookk Myungjo', serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: -.035em;
+  word-break: keep-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
 
 .discover-empty { min-height: 620px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 90px 34px 50px; background: #f5f4ef; text-align: center; }
 .discover-empty > span { margin-bottom: 12px; color: #8a8a8a; font-size: 12px; }
@@ -285,8 +359,16 @@ body { font-family: 'Pretendard', sans-serif; }
 .phone--desktop .phone-screen { inset: 0; border-radius: 0; }
 .prototype-stage--desktop .desktop-note { display: none; }
 .phone--desktop .discover-feed__intro,
-.phone--desktop .discover-grid { width: min(100%, 960px); margin-right: auto; margin-left: auto; }
-.phone--desktop .discover-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 20px; }
+.phone--desktop .discover-pairs { width: min(100%, 920px); margin-right: auto; margin-left: auto; }
+.phone--desktop .discover-pair {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+  padding: 30px 0 34px;
+}
+.phone--desktop .discover-pair__header { position: sticky; top: 88px; padding: 4px 0 0; }
+.phone--desktop .discover-pair__books { gap: 22px; }
 
 .mode-tabs {
   position: absolute;
