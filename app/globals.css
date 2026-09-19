@@ -488,7 +488,7 @@ body { font-family: 'Pretendard', sans-serif; }
 }
 .genre-mega__top > .view-mode-setting {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-columns: 72px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   margin: 0;
@@ -500,15 +500,28 @@ body { font-family: 'Pretendard', sans-serif; }
   color: #777;
   font-size: 9px;
   font-weight: 700;
+  white-space: nowrap;
 }
 .genre-mega__top > .view-mode-setting > div {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 7px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(118px, 1fr));
+  gap: 8px;
 }
 .genre-mega__top > .view-mode-setting button {
-  height: 36px;
-  border-radius: 10px;
+  min-width: 0;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 14px;
+  border-radius: 11px;
   font-size: 10px;
+  white-space: nowrap;
+  word-break: keep-all;
+}
+.genre-mega__top > .view-mode-setting button svg {
+  flex: 0 0 auto;
 }
 
 .genre-mega__groups {
