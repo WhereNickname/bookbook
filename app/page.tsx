@@ -659,7 +659,7 @@ function Reader({
                     <strong>{nextBook.title}</strong>
                     <p>{getDiscoveryLine(nextBook)}</p>
                     <button type="button" onClick={() => onNextBook(nextBook)}>
-                      다음 책 10초 보기 <ArrowRight aria-hidden="true" />
+                      다음 책 맛보기 <ArrowRight aria-hidden="true" />
                     </button>
                   </section>
                 </article>
@@ -668,7 +668,7 @@ function Reader({
             {mode === 'plain' && hasReachedEnd && (
               <section className="reading-next-card" aria-label="다음 책">
                 <div>
-                  <span>NEXT · 반대편 책</span>
+                  <span>NEXT · 다음 책</span>
                   <strong>{nextBook.title}</strong>
                   <p>{getDiscoveryLine(nextBook)}</p>
                 </div>
@@ -678,7 +678,7 @@ function Reader({
                   onTouchStart={(event) => event.stopPropagation()}
                   onClick={() => onNextBook(nextBook)}
                 >
-                  10초 보기 <ArrowRight aria-hidden="true" />
+                  맛보기 <ArrowRight aria-hidden="true" />
                 </button>
               </section>
             )}
