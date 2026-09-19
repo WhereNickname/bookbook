@@ -418,56 +418,149 @@ body { font-family: 'Pretendard', sans-serif; }
 .phone--desktop .discover-feed__intro strong { max-width: 360px; font-size: 32px; }
 .phone--desktop .discover-feed__future-action-space { height: 128px; }
 
-.phone--desktop .genre-menu {
-  top: 82px;
-  right: 28px;
-  left: auto;
-  width: min(520px, calc(100vw - 56px));
-  padding: 18px 20px 20px;
-  border: 1px solid rgba(20, 20, 20, .08);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, .96);
-  box-shadow: 0 22px 60px rgba(0, 0, 0, .16);
+.genre-menu-backdrop {
+  position: absolute;
+  z-index: 2;
+  inset: 76px 0 0;
+  border: 0;
+  background: rgba(17, 17, 17, .46);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  animation: genre-backdrop-in .2s ease-out;
 }
-.phone--desktop .genre-menu > .view-mode-setting {
+
+.phone--desktop .genre-menu--desktop {
+  top: 76px;
+  right: 0;
+  left: 0;
+  width: 100%;
+  max-width: none;
+  padding: 28px max(34px, calc((100vw - 1120px) / 2)) 30px;
+  border: 0;
+  border-top: 1px solid #ecece8;
+  border-radius: 0;
+  background: rgba(255, 255, 255, .985);
+  box-shadow: 0 22px 52px rgba(0, 0, 0, .14);
+  backdrop-filter: blur(18px) saturate(120%);
+  -webkit-backdrop-filter: blur(18px) saturate(120%);
+}
+
+.genre-mega__top {
   display: grid;
-  grid-template-columns: 108px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: end;
+  gap: 44px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #ecece8;
+}
+.genre-mega__top > div:first-child {
+  min-width: 0;
+}
+.genre-mega__top > div:first-child > span {
+  display: block;
+  margin-bottom: 7px;
+  color: #00a934;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+.genre-mega__top > div:first-child > strong {
+  display: block;
+  color: #171717;
+  font-family: 'Bookk Myungjo', serif;
+  font-size: 25px;
+  line-height: 1.25;
+  letter-spacing: -.055em;
+}
+.genre-mega__top > div:first-child > p {
+  margin: 7px 0 0;
+  color: #777;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.genre-mega__top > .view-mode-setting {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
   align-items: center;
-  gap: 14px;
-  margin-bottom: 18px;
-  padding: 0 0 18px;
-}
-.phone--desktop .genre-menu > .view-mode-setting > legend {
+  gap: 12px;
   margin: 0;
-  color: #555;
-  font-size: 10px;
-  font-weight: 750;
+  padding: 0;
+  border: 0;
 }
-.phone--desktop .genre-menu > .view-mode-setting > div {
+.genre-mega__top > .view-mode-setting > legend {
+  margin: 0;
+  color: #777;
+  font-size: 9px;
+  font-weight: 700;
+}
+.genre-mega__top > .view-mode-setting > div {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
 }
-.phone--desktop .genre-menu > .view-mode-setting button {
-  height: 38px;
-  border-radius: 12px;
-  font-size: 11px;
-}
-.phone--desktop .genre-menu > p {
-  margin: 0 0 10px;
-  color: #555;
+.genre-mega__top > .view-mode-setting button {
+  height: 36px;
+  border-radius: 10px;
   font-size: 10px;
-  font-weight: 750;
 }
-.phone--desktop .genre-menu > div:not(.view-mode-setting) {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+.genre-mega__groups {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 28px !important;
+  padding-top: 24px;
+}
+.genre-mega__groups section {
+  min-width: 0;
+  padding-right: 24px;
+  border-right: 1px solid #ecece8;
+}
+.genre-mega__groups section:last-child {
+  padding-right: 0;
+  border-right: 0;
+}
+.genre-mega__groups section > span {
+  display: block;
+  margin-bottom: 7px;
+  color: #00a934;
+  font-size: 9px;
+  font-weight: 800;
+}
+.genre-mega__groups section > strong {
+  display: block;
+  color: #1b1b1b;
+  font-size: 13px;
+  line-height: 1.35;
+  letter-spacing: -.03em;
+}
+.genre-mega__groups section > p {
+  min-height: 36px;
+  margin: 7px 0 14px;
+  color: #777;
+  font-size: 10px;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+.genre-mega__groups section > div {
+  display: flex;
+  flex-wrap: wrap;
   gap: 7px;
 }
-.phone--desktop .genre-menu > div:not(.view-mode-setting) button {
+.genre-mega__groups section button {
   min-width: 0;
-  padding: 10px 12px;
-  border-radius: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f7f7f5;
+  font-size: 10px;
   text-align: center;
+}
+.genre-mega__all button {
+  width: 100%;
+  justify-content: center;
+}
+
+@keyframes genre-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .mode-tabs {

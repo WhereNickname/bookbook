@@ -801,24 +801,122 @@ function DiscoverFeed({
             {isGenreMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
           </button>
         </header>
+        {isGenreMenuOpen && viewMode === 'desktop' && (
+          <button
+            type="button"
+            className="genre-menu-backdrop"
+            aria-label="메뉴 닫기"
+            onClick={() => setIsGenreMenuOpen(false)}
+          />
+        )}
         {isGenreMenuOpen && (
-          <div className="genre-menu" role="menu" aria-label="책 장르 선택">
-            <ViewModeSetting viewMode={viewMode} onChange={changeViewMode} />
-            <p>어떤 책을 볼까?</p>
-            <div>
-              {GENRES.map((genre) => (
-                <button
-                  type="button"
-                  role="menuitemradio"
-                  aria-checked={selectedGenre === genre}
-                  className={selectedGenre === genre ? 'genre-menu__item--active' : ''}
-                  onClick={() => selectGenre(genre)}
-                  key={genre}
-                >
-                  {genre}
-                </button>
-              ))}
-            </div>
+          <div className={`genre-menu ${viewMode === 'desktop' ? 'genre-menu--desktop' : ''}`} role="menu" aria-label="책 장르 선택">
+            {viewMode === 'desktop' ? (
+              <>
+                <div className="genre-mega__top">
+                  <div>
+                    <span>BOOKBOOK MENU</span>
+                    <strong>오늘은 어떤 방향으로 읽어볼까?</strong>
+                    <p>표지보다 먼저, 읽고 싶은 감각부터 골라봐.</p>
+                  </div>
+                  <ViewModeSetting viewMode={viewMode} onChange={changeViewMode} />
+                </div>
+                <div className="genre-mega__groups">
+                  <section>
+                    <span>이야기로 들어가기</span>
+                    <strong>서사와 감정이 먼저라면</strong>
+                    <p>인물과 사건을 따라가며 빠르게 빠져드는 책들.</p>
+                    <div>
+                      {(['문학', '고전문학', '로맨스'] as Genre[]).map((genre) => (
+                        <button
+                          type="button"
+                          role="menuitemradio"
+                          aria-checked={selectedGenre === genre}
+                          className={selectedGenre === genre ? 'genre-menu__item--active' : ''}
+                          onClick={() => selectGenre(genre)}
+                          key={genre}
+                        >
+                          {genre}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                  <section>
+                    <span>생각으로 들어가기</span>
+                    <strong>질문이 먼저 떠오른다면</strong>
+                    <p>정보, 관점, 생각거리를 중심으로 고르는 책들.</p>
+                    <div>
+                      {(['비문학', '자기개발'] as Genre[]).map((genre) => (
+                        <button
+                          type="button"
+                          role="menuitemradio"
+                          aria-checked={selectedGenre === genre}
+                          className={selectedGenre === genre ? 'genre-menu__item--active' : ''}
+                          onClick={() => selectGenre(genre)}
+                          key={genre}
+                        >
+                          {genre}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                  <section>
+                    <span>배경으로 고르기</span>
+                    <strong>익숙함과 낯섦 사이에서</strong>
+                    <p>작품의 언어와 문화권을 기준으로 둘러봐.</p>
+                    <div>
+                      {(['한국', '해외', '영어원문'] as Genre[]).map((genre) => (
+                        <button
+                          type="button"
+                          role="menuitemradio"
+                          aria-checked={selectedGenre === genre}
+                          className={selectedGenre === genre ? 'genre-menu__item--active' : ''}
+                          onClick={() => selectGenre(genre)}
+                          key={genre}
+                        >
+                          {genre}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                  <section className="genre-mega__all">
+                    <span>처음부터 둘러보기</span>
+                    <strong>아직 정하지 않았다면</strong>
+                    <p>지금 준비된 책 41권을 한 번에 이어서 탐색해.</p>
+                    <div>
+                      <button
+                        type="button"
+                        role="menuitemradio"
+                        aria-checked={selectedGenre === '전체'}
+                        className={selectedGenre === '전체' ? 'genre-menu__item--active' : ''}
+                        onClick={() => selectGenre('전체')}
+                      >
+                        전체 책 보기
+                      </button>
+                    </div>
+                  </section>
+                </div>
+              </>
+            ) : (
+              <>
+                <ViewModeSetting viewMode={viewMode} onChange={changeViewMode} />
+                <p>어떤 책을 볼까?</p>
+                <div>
+                  {GENRES.map((genre) => (
+                    <button
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={selectedGenre === genre}
+                      className={selectedGenre === genre ? 'genre-menu__item--active' : ''}
+                      onClick={() => selectGenre(genre)}
+                      key={genre}
+                    >
+                      {genre}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
         <div className="discover-feed" ref={feedRef}>
