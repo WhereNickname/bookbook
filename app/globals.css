@@ -45,7 +45,7 @@ body { font-family: 'Pretendard', sans-serif; }
 
 .discover-header {
   position: absolute;
-  z-index: 4;
+  z-index: var(--layer-header);
   top: 0;
   right: 0;
   left: 0;
@@ -66,7 +66,7 @@ body { font-family: 'Pretendard', sans-serif; }
 
 .genre-menu {
   position: absolute;
-  z-index: 3;
+  z-index: var(--layer-menu);
   top: 84px;
   right: 18px;
   left: 18px;
@@ -90,6 +90,9 @@ body { font-family: 'Pretendard', sans-serif; }
 }
 
 .discover-feed {
+  position: relative;
+  z-index: var(--layer-content);
+  isolation: isolate;
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
@@ -281,6 +284,7 @@ body { font-family: 'Pretendard', sans-serif; }
 .phone--no-motion .book-entry__cover-slide { transition: none; }
 .book-entry__cover { width: 144px; height: 198px; position: relative; overflow: hidden; color: #111; box-shadow: 12px 16px 28px rgba(0, 0, 0, .22); transform: rotate(-2deg); }
 .book-entry__cover-image { position: absolute; z-index: 4; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #eee; }
+/* 탐색 피드 내부 요소는 discover-feed stacking context 안에서만 경쟁한다. */
 .cover-art { position: absolute; inset: 0; overflow: hidden; }
 .cover-label { position: absolute; z-index: 2; right: 13px; bottom: 13px; left: 13px; display: flex; flex-direction: column; gap: 4px; }
 .cover-label span { font-size: 7px; font-weight: 650; letter-spacing: .03em; opacity: .72; }
@@ -363,6 +367,10 @@ body { font-family: 'Pretendard', sans-serif; }
 }
 
 .phone--discover {
+  --layer-content: 0;
+  --layer-backdrop: 20;
+  --layer-menu: 30;
+  --layer-header: 40;
   touch-action: pan-y;
   user-select: none;
 }
@@ -420,7 +428,7 @@ body { font-family: 'Pretendard', sans-serif; }
 
 .genre-menu-backdrop {
   position: absolute;
-  z-index: 2;
+  z-index: var(--layer-backdrop);
   inset: 76px 0 0;
   border: 0;
   background: rgba(17, 17, 17, .46);
