@@ -286,7 +286,7 @@ body { font-family: 'Pretendard', sans-serif; }
 .prototype-stage--desktop .desktop-note { display: none; }
 .phone--desktop .discover-feed__intro,
 .phone--desktop .discover-grid { width: min(100%, 960px); margin-right: auto; margin-left: auto; }
-.phone--desktop .discover-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 34px 18px; }
+.phone--desktop .discover-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 20px; }
 
 .mode-tabs {
   position: absolute;

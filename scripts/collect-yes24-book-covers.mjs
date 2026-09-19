@@ -1,6 +1,6 @@
 /*
  * FILE ROLE: 하드코딩된 카탈로그를 YES24 상품 검색에서 한 번 조회해 정적 표지 매핑을 생성한다.
- * OWNS: 제목과 저자 기준 대표 판본 선택, 표지·ISBN·상품 링크 스냅샷 출력.
+ * OWNS: 제목과 저자 기준 대표 판본 선택, XL 표지·ISBN·상품 링크 스냅샷 출력.
  * USES: YES24_API_KEY 환경변수와 YES24 Goods 상품 검색 API.
  * MUST NOT: 앱 런타임에서 실행되거나 API 키를 출력·저장한다.
  */
@@ -28,6 +28,9 @@ const searchAliases = {
 };
 
 const normalize = (value = '') => value.toLocaleLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+const getHighResolutionCoverUrl = (url) => url
+  .replace(/^http:/u, 'https:')
+  .replace(/\/L(?=$|[?#])/u, '/XL');
 const scoreCandidate = (candidate, searchTitle, author) => {
   const candidateTitle = normalize(candidate.title);
   const candidateAuthor = normalize(candidate.author);
@@ -75,11 +78,13 @@ for (const book of books) {
     continue;
   }
 
+  const coverUrl = getHighResolutionCoverUrl(selected.candidate.cover);
+
   stored[book.title] = {
     itemId: selected.candidate.itemId,
     ...(selected.candidate.isbn13 ? { isbn: selected.candidate.isbn13 } : {}),
-    coverUrl: selected.candidate.cover.replace(/^http:/u, 'https:'),
-    coverUrls: [selected.candidate.cover.replace(/^http:/u, 'https:')],
+    coverUrl,
+    coverUrls: [coverUrl],
     productUrl: selected.candidate.link.replace(/^http:/u, 'https:'),
   };
   console.log(`표지 확보: ${book.title} ← ${selected.candidate.title} / ${selected.candidate.author}`);
