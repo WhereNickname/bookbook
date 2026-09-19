@@ -55,7 +55,7 @@ body { font-family: 'Pretendard', sans-serif; }
   height: 76px;
   padding: 22px 20px 0;
   color: #171717;
-  background: linear-gradient(#f7f7f5 72%, rgba(247, 247, 245, 0));
+  background: linear-gradient(#fff 72%, rgba(255, 255, 255, 0));
   pointer-events: none;
 }
 
@@ -248,7 +248,7 @@ body { font-family: 'Pretendard', sans-serif; }
   user-select: none;
 }
 
-.phone--discover .phone-screen { background: #f7f7f5; }
+.phone--discover .phone-screen { background: #fff; }
 
 .phone--ebook {
   touch-action: pan-y;
