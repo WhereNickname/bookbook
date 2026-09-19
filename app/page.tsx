@@ -75,6 +75,27 @@ function getDiscoveryLine(book: FeedBook) {
   return book.quote.split('\n').find((line) => line.trim().length > 0) ?? book.description;
 }
 
+function getEditorialPair(book: FeedBook) {
+  return EDITORIAL_PAIRS.find((pair) => pair.left === book.title || pair.right === book.title);
+}
+
+function getBookQuestion(book: FeedBook) {
+  return getEditorialPair(book)?.prompt ?? '이 책 다음에는 어떤 방향이 기다리고 있을까';
+}
+
+function getNextBook(book: FeedBook) {
+  const pair = getEditorialPair(book);
+  if (pair) {
+    const pairedTitle = pair.left === book.title ? pair.right : pair.left;
+    const pairedBook = FEED_BOOKS.find((candidate) => candidate.title === pairedTitle);
+    if (pairedBook) return pairedBook;
+  }
+
+  const currentIndex = FEED_BOOKS.findIndex((candidate) => candidate.title === book.title);
+  if (currentIndex < 0) return FEED_BOOKS[0];
+  return FEED_BOOKS[(currentIndex + 1) % FEED_BOOKS.length];
+}
+
 function buildDiscoveryPairs(books: FeedBook[], useEditorialOrder: boolean): DiscoveryPairGroup[] {
   const byTitle = new Map(books.map((book) => [book.title, book]));
   const used = new Set<string>();
@@ -126,7 +147,26 @@ export default function Home() {
   const [discoverScrollTop, setDiscoverScrollTop] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('phone');
 
-  if (isReading && selectedBook) return <Reader book={selectedBook} animationsEnabled={animationsEnabled} onAnimationsChange={setAnimationsEnabled} viewMode={viewMode} onViewModeChange={setViewMode} onExit={() => { setIsReading(false); setSelectedBook(null); }} />;
+  if (isReading && selectedBook) {
+    return (
+      <Reader
+        key={selectedBook.title}
+        book={selectedBook}
+        animationsEnabled={animationsEnabled}
+        onAnimationsChange={setAnimationsEnabled}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        onNextBook={(nextBook) => {
+          setSelectedBook(nextBook);
+          setIsReading(true);
+        }}
+        onExit={() => {
+          setIsReading(false);
+          setSelectedBook(null);
+        }}
+      />
+    );
+  }
   if (selectedBook) {
     return <BookEntry book={selectedBook} animationsEnabled={animationsEnabled} viewMode={viewMode} onBack={() => setSelectedBook(null)} onStartReading={() => setIsReading(true)} />;
   }
@@ -221,8 +261,25 @@ function ViewModeSetting({ viewMode, onChange }: { viewMode: ViewMode; onChange:
   );
 }
 
-function Reader({ book, animationsEnabled, onAnimationsChange, viewMode, onViewModeChange, onExit }: { book: FeedBook; animationsEnabled: boolean; onAnimationsChange: (enabled: boolean) => void; viewMode: ViewMode; onViewModeChange: (mode: ViewMode) => void; onExit: () => void }) {
+function Reader({
+  book,
+  animationsEnabled,
+  onAnimationsChange,
+  viewMode,
+  onViewModeChange,
+  onNextBook,
+  onExit,
+}: {
+  book: FeedBook;
+  animationsEnabled: boolean;
+  onAnimationsChange: (enabled: boolean) => void;
+  viewMode: ViewMode;
+  onViewModeChange: (mode: ViewMode) => void;
+  onNextBook: (book: FeedBook) => void;
+  onExit: () => void;
+}) {
   const content = getBookContent(book.title);
+  const nextBook = getNextBook(book);
   const teaserSentences = content.prologue;
   const bookSentences = content.sentences;
   const lines = useMemo<ReadingLine[]>(
@@ -424,7 +481,7 @@ function Reader({ book, animationsEnabled, onAnimationsChange, viewMode, onViewM
           tabIndex={0}
           onPointerDown={(event) => {
             if (event.pointerType === 'touch') return;
-            if ((event.target as HTMLElement).closest('.mode-tabs, .type-menu, .bottom-tabbar, .continue-cta')) return;
+            if ((event.target as HTMLElement).closest('.mode-tabs, .type-menu, .bottom-tabbar, .reading-next-card')) return;
             gesture.current = { x: event.clientX, y: event.clientY, moved: false };
             event.currentTarget.setPointerCapture(event.pointerId);
           }}
@@ -449,7 +506,7 @@ function Reader({ book, animationsEnabled, onAnimationsChange, viewMode, onViewM
           }}
           onTouchStart={(event) => {
             if (event.touches.length !== 1) return;
-            if ((event.target as HTMLElement).closest('.mode-tabs, .type-menu, .bottom-tabbar, .continue-cta')) return;
+            if ((event.target as HTMLElement).closest('.mode-tabs, .type-menu, .bottom-tabbar, .reading-next-card')) return;
             const touch = event.touches[0];
             touchGesture.current = { x: touch.clientX, y: touch.clientY, moved: false };
           }}
@@ -597,12 +654,33 @@ function Reader({ book, animationsEnabled, onAnimationsChange, viewMode, onViewM
                   {ebookParagraphs.map((paragraph, index) => (
                     <p key={index}>{paragraph}</p>
                   ))}
-                  <button type="button" className="ebook-continue">이어서 읽기</button>
+                  <section className="ebook-next" aria-label="다음 책">
+                    <span>NEXT</span>
+                    <strong>{nextBook.title}</strong>
+                    <p>{getDiscoveryLine(nextBook)}</p>
+                    <button type="button" onClick={() => onNextBook(nextBook)}>
+                      다음 책 10초 보기 <ArrowRight aria-hidden="true" />
+                    </button>
+                  </section>
                 </article>
               </div>
             )}
             {mode === 'plain' && hasReachedEnd && (
-              <button type="button" className="continue-cta">이어서 읽기</button>
+              <section className="reading-next-card" aria-label="다음 책">
+                <div>
+                  <span>NEXT · 반대편 책</span>
+                  <strong>{nextBook.title}</strong>
+                  <p>{getDiscoveryLine(nextBook)}</p>
+                </div>
+                <button
+                  type="button"
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onTouchStart={(event) => event.stopPropagation()}
+                  onClick={() => onNextBook(nextBook)}
+                >
+                  10초 보기 <ArrowRight aria-hidden="true" />
+                </button>
+              </section>
             )}
             <nav className="bottom-tabbar" aria-label="하단 메뉴">
               <button
@@ -655,6 +733,7 @@ function BookEntry({
 }) {
   const [savedBooks, setSavedBooks] = useState<Set<string>>(() => new Set());
   const saved = savedBooks.has(book.title);
+  const bookQuestion = getBookQuestion(book);
 
   const toggleSaved = () => {
     setSavedBooks((current) => {
@@ -696,12 +775,16 @@ function BookEntry({
             <div><h1>{book.title}</h1><p>{book.author}</p></div>
             <span><Clock3 aria-hidden="true" /> 약 1분</span>
           </div>
+          <div className="book-entry__question">
+            <span>이 책에서 만나게 될 질문</span>
+            <strong>{bookQuestion}</strong>
+          </div>
           <p className="book-entry__description">{book.description}</p>
           <button type="button" className="book-entry__start" onClick={onStartReading}>
-            1분 미리보기 시작 <ArrowRight aria-hidden="true" />
+            1분만 들어가보기 <ArrowRight aria-hidden="true" />
           </button>
           <small>
-            스크롤하며 이 책의 분위기를 먼저 만나봐
+            약 1분 동안 이 책의 문장을 먼저 만나봐
             {book.productUrl && <> · <a href={book.productUrl} target="_blank" rel="noreferrer">YES24 상품 보기</a></>}
           </small>
         </section>
@@ -922,10 +1005,10 @@ function DiscoverFeed({
         <div className="discover-feed" ref={feedRef}>
           <div className="discover-feed__intro">
             <div>
-              <span>{selectedGenre === '전체' ? '오늘의 책' : selectedGenre}</span>
-              <strong>어떤 책을<br />펼쳐볼까?</strong>
+              <span>{selectedGenre === '전체' ? '오늘의 첫 질문' : selectedGenre}</span>
+              <strong>둘 중 하나만<br />먼저 펼친다면?</strong>
             </div>
-            <p>{visibleBooks.length}권</p>
+            <p>{visibleBooks.length}권 · 계속 이어짐</p>
           </div>
           <div className="discover-pairs">
             {discoveryPairs.map((pair, pairIndex) => (
@@ -935,7 +1018,7 @@ function DiscoverFeed({
                 aria-label={pair.prompt}
               >
                 <header className="discover-pair__header">
-                  <span>{pairIndex === 0 && selectedGenre === '전체' ? '오늘의 두 갈래' : '같은 페이지, 다른 방향'}</span>
+                  <span>{String(pairIndex + 1).padStart(2, '0')} · {pairIndex === 0 && selectedGenre === '전체' ? '오늘의 두 갈래' : '다음 갈래'}</span>
                   <strong>{pair.prompt}</strong>
                 </header>
                 <div className="discover-pair__books">
@@ -957,6 +1040,13 @@ function DiscoverFeed({
                     </article>
                   ))}
                 </div>
+                {discoveryPairs[pairIndex + 1] && (
+                  <div className="discover-pair__next" aria-hidden="true">
+                    <span>NEXT</span>
+                    <strong>{discoveryPairs[pairIndex + 1].prompt}</strong>
+                    <ArrowRight aria-hidden="true" />
+                  </div>
+                )}
               </section>
             ))}
           </div>
