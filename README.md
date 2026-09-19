@@ -1,6 +1,6 @@
 # Bookbook 프로토타입
 
-짧은 문장 단위로 책을 넘겨 읽는 Bookbook 샘플이다.
+41권의 분위기를 짧은 문장 단위로 먼저 만나고, 일반 리더나 전자책 형식으로 읽어보는 Bookbook 샘플이다.
 
 ## 처음 한 번만: Node.js 설치
 
@@ -37,6 +37,19 @@ npm run start
 
 ## 주요 파일
 
-- `app/page.tsx`: 화면, 제스처, 문체 선택 메뉴
-- `app/book-data.ts`: 프롤로그와 본문 문장 데이터
+- `app/page.tsx`: 책 탐색·소개·리더 화면, 제스처와 화면 설정
+- `app/book-catalog.ts`: 탐색 화면에 사용하는 41권의 서지·분류 정보
+- `app/book-data.ts`: 책 콘텐츠 조회 API
+- `app/content-*.ts`: 프롤로그와 장면 중심 미리보기 원고
 - `app/globals.css`: 레이아웃·서체·애니메이션 스타일
+- `scripts/check-content.mjs`: 41권 구성과 콘텐츠 규칙 검사
+- `docs/BOOK_CONTENT_REVIEW.md`: 현재 앱 원고에서 자동 생성한 전체 검수본
+
+## 콘텐츠 확인
+
+```bash
+npm run check:content
+npm run generate:review
+```
+
+원고는 `app/content-*.ts`에서 수정한다. 검수본은 직접 고치지 않고 `generate:review`로 다시 만든다.

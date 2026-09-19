@@ -54,7 +54,6 @@ export default function Home() {
   const [isReading, setIsReading] = useState(false);
   const [selectedBook, setSelectedBook] = useState<FeedBook | null>(null);
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
-  const [isWelcomeOpen, setIsWelcomeOpen] = useState(true);
   const [selectedGenre, setSelectedGenre] = useState<Genre>('전체');
   const [discoverScrollTop, setDiscoverScrollTop] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>('phone');
@@ -66,11 +65,9 @@ export default function Home() {
   return (
     <DiscoverFeed
       animationsEnabled={animationsEnabled}
-      isWelcomeOpen={isWelcomeOpen}
       selectedGenre={selectedGenre}
       viewMode={viewMode}
       initialScrollTop={discoverScrollTop}
-      onCloseWelcome={() => setIsWelcomeOpen(false)}
       onGenreChange={setSelectedGenre}
       onViewModeChange={setViewMode}
       onSelectBook={(book, scrollTop) => {
@@ -625,7 +622,10 @@ function BookEntry({
           <button type="button" className="book-entry__start" onClick={onStartReading}>
             1분 미리보기 시작 <ArrowRight aria-hidden="true" />
           </button>
-          <small>스크롤하며 이 책의 분위기를 먼저 만나봐</small>
+          <small>
+            스크롤하며 이 책의 분위기를 먼저 만나봐
+            {book.productUrl && <> · <a href={book.productUrl} target="_blank" rel="noreferrer">YES24 상품 보기</a></>}
+          </small>
         </section>
       </div>
     </PhoneFrame>
@@ -639,7 +639,7 @@ function BookCoverArtwork({ book, coverUrl = book.coverUrl }: { book: FeedBook; 
     <div className={`book-entry__cover cover--${book.coverStyle} ${book.coverPattern ? `cover-pattern--${book.coverPattern}` : ''}`}
       style={{ '--cover-color': book.color, '--cover-ink': book.foreground } as CSSProperties} aria-label={`${book.title} 표지`}>
       {coverUrl && !hasCoverError && (
-        // oxlint-disable-next-line next/no-img-element -- 정적 Daum 책 외부 URL을 쓰는 Vite MVP다.
+        // oxlint-disable-next-line next/no-img-element -- 정적 YES24 책 표지 URL을 쓰는 Vite MVP다.
         <img
           className="book-entry__cover-image"
           src={coverUrl}
@@ -661,21 +661,17 @@ function BookCoverArtwork({ book, coverUrl = book.coverUrl }: { book: FeedBook; 
 
 function DiscoverFeed({
   animationsEnabled,
-  isWelcomeOpen,
   selectedGenre,
   viewMode,
   initialScrollTop,
-  onCloseWelcome,
   onGenreChange,
   onViewModeChange,
   onSelectBook,
 }: {
   animationsEnabled: boolean;
-  isWelcomeOpen: boolean;
   selectedGenre: Genre;
   viewMode: ViewMode;
   initialScrollTop: number;
-  onCloseWelcome: () => void;
   onGenreChange: (genre: Genre) => void;
   onViewModeChange: (mode: ViewMode) => void;
   onSelectBook: (book: FeedBook, scrollTop: number) => void;
@@ -707,11 +703,11 @@ function DiscoverFeed({
     <PhoneFrame
       viewMode={viewMode}
       className={`phone--discover ${animationsEnabled ? 'phone--screen-enter' : 'phone--no-motion'}`}
-      ariaLabel="스북 책 탐색 화면"
-      note="책의 첫 문장을 따라 천천히 내려가봐"
+      ariaLabel="북북 책 탐색 화면"
+      note="표지를 둘러보고 오늘 펼칠 책을 골라봐"
     >
         <header className="discover-header">
-          <strong>스북 <small>{selectedGenre}</small></strong>
+          <strong>북북 <small>BOOKBOOK</small></strong>
           <button
             type="button"
             aria-label="장르 메뉴"
@@ -742,31 +738,32 @@ function DiscoverFeed({
           </div>
         )}
         <div className="discover-feed" ref={feedRef}>
+          <div className="discover-feed__intro">
+            <div>
+              <span>{selectedGenre === '전체' ? '오늘의 책' : selectedGenre}</span>
+              <strong>어떤 책을<br />펼쳐볼까?</strong>
+            </div>
+            <p>{visibleBooks.length}권</p>
+          </div>
+          <div className="discover-grid">
           {visibleBooks.map((book, index) => (
             <article
               key={book.title}
               className="discover-card"
               style={{ '--card-color': book.color, '--card-foreground': book.foreground } as CSSProperties}
             >
-              <div className="discover-card__meta">
-                <span>{book.category}</span>
+              <button type="button" className="discover-card__cover" onClick={() => selectBook(book)} aria-label={`${book.title} 살펴보기`}>
+                <BookCoverArtwork book={book} />
                 <span>{String(index + 1).padStart(2, '0')}</span>
-              </div>
-              <button type="button" className="discover-card__quote" onClick={() => selectBook(book)}>
-                <p>{book.quote}</p>
-                <span aria-hidden="true">“</span>
               </button>
-              <footer className="discover-card__footer">
-                <div>
-                  <h1>{book.title}</h1>
-                  <p>{book.author}</p>
-                </div>
-                <button type="button" className="discover-card__open" onClick={() => selectBook(book)} aria-label={`${book.title} 살펴보기`}>
-                  <ArrowRight aria-hidden="true" />
-                </button>
-              </footer>
+              <button type="button" className="discover-card__info" onClick={() => selectBook(book)}>
+                <strong>{book.title}</strong>
+                <span>{book.author}</span>
+                <small>{book.category}</small>
+              </button>
             </article>
           ))}
+          </div>
           {visibleBooks.length === 0 && (
             <div className="discover-empty">
               <span>{selectedGenre}</span>
@@ -776,18 +773,6 @@ function DiscoverFeed({
             </div>
           )}
         </div>
-        {visibleBooks.length > 1 && <p className="discover-hint">아래로 넘겨, 다음 문장을 만나봐</p>}
-        {isWelcomeOpen && (
-          <button
-            type="button"
-            className="welcome-overlay"
-            onClick={onCloseWelcome}
-            aria-label="시작 안내 닫기"
-          >
-            <strong>미리보기 문장들을 찾아서<br />직접 읽고싶은 책을 고르세요</strong>
-            <span>아무 곳이나 클릭해서 닫기</span>
-          </button>
-        )}
     </PhoneFrame>
   );
 }

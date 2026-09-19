@@ -12,7 +12,8 @@
     "start": "vite preview --config vite.vercel.config.ts",
     "lint": "oxlint",
     "check:content": "node scripts/check-content.mjs",
-    "collect:covers": "node --env-file-if-exists=.env.local scripts/collect-kakao-book-covers.mjs",
+    "generate:review": "node scripts/generate-content-review.mjs",
+    "collect:covers": "node --env-file-if-exists=.env.local scripts/collect-yes24-book-covers.mjs",
     "format": "oxfmt"
   },
   "dependencies": {
